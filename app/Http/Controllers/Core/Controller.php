@@ -15,12 +15,12 @@ class Controller extends BaseController
 
     public function validate(Request $request, array $rules, array $messages = [], array $customAttributes = [])
     {
-        $errors = Validator::make($request->all(), $rules, $messages, $customAttributes)->errors()->all();
+        $errors = Validator::make($request->all(), $rules, $messages, $customAttributes)->errors()->first();
 
         if (empty($errors)) {
             return true;
         } else {
-            throw new \Exception($errors[0]);
+            throw new \Exception($errors);
         }
     }
 

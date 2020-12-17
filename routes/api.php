@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\System\AuthController;
+use App\Http\Controllers\Test\TestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,15 +21,18 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::group([
-
     'middleware' => 'api',
     'prefix' => 'auth'
-
-], function ($router) {
-
-    Route::post('login', [AuthController::class, 'login']);
+], function () {
+    Route::post('login', [AuthController::class, 'login'])->name('login');
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('me', [AuthController::class, 'me']);
+});
 
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'test'
+], function () {
+    Route::get('user', [TestController::class, 'user']);
 });
