@@ -13,16 +13,13 @@ namespace App\Http\Controllers\Test;
 use App\Http\Controllers\Core\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 
 class TestController extends Controller
 {
     public function user(Request $request)
     {
         $this->validate($request, [
-            'id' => 'required|integer',
-            'ids' => 'required'
+            'id' => 'required|integer'
         ]);
 
         $params = request()->all();
