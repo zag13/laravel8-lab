@@ -42,5 +42,7 @@ Route::group([
     'prefix' => 'test'
 ], function () {
     Route::get('user', [TestController::class, 'user']);
+
+    Route::post('file', [TestController::class, 'file']);
 });
 

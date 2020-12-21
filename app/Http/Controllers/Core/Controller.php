@@ -32,5 +32,21 @@ class Controller extends BaseController
         }
     }
 
+    public function respSuccess($data = [], $msg = 'ok')
+    {
+        return response()->json([
+            'code' => 10000,
+            'msg' => $msg,
+            'data' => $data
+        ]);
+    }
 
+    public function respFail($msg = 'error', $code = 0)
+    {
+        return response()->json([
+            'code' => $code,
+            'msg' => $msg,
+            'data' => null
+        ]);
+    }
 }
