@@ -70,18 +70,24 @@ class Excel
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet()->setTitle('工作表格1');
 
-        foreach ($header as $key => $value) {
-            $sheet->setCellValueByColumnAndRow($key + 1, 1, $value);
+        $col = 1;
+        foreach ($header as $value) {
+            $sheet->setCellValueByColumnAndRow($col, 1, $value);
+            $col++;
         }
+        unset($col);
 
-        $row = 1;
+        $row = 2;
         foreach ($data as $cols) {
-            $row += 1;
-            foreach ($cols as $col => $cellValue) {
-                $col += 1;
+            $col = 1;
+            foreach ($cols as $cellValue) {
                 $sheet->setCellValueByColumnAndRow($col, $row, $cellValue);
+                $col++;
             }
+            $row++;
         }
+        unset($row, $col);
+
         return $spreadsheet;
     }
 
