@@ -43,6 +43,7 @@ Route::group([
 ], function () {
     Route::get('user', [TestController::class, 'user']);
 
-    Route::post('file', [TestController::class, 'file']);
+    Route::post('fileReader', [TestController::class, 'fileReader']);
+    Route::get('fileExport', [TestController::class, 'fileExport']);
 });
 

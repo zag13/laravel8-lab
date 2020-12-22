@@ -32,6 +32,12 @@ class Controller extends BaseController
         }
     }
 
+    /**
+     * 自定义成功返回格式
+     * @param array  $data
+     * @param string $msg
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function respSuccess($data = [], $msg = 'ok')
     {
         return response()->json([
@@ -41,6 +47,12 @@ class Controller extends BaseController
         ]);
     }
 
+    /**
+     * 自定义失败返回格式
+     * @param string $msg
+     * @param int    $code
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function respFail($msg = 'error', $code = 0)
     {
         return response()->json([
