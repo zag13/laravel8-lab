@@ -53,7 +53,7 @@ class Excel
         if (!is_dir($path)) {
             Storage::makeDirectory('download/excel/');
         }
-        $tmp = $path . $fileName . '.' . $fileType;
+        $tmp = $path . $fileName . '.' . strtolower($fileType);
         $writer->save($tmp);
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
@@ -86,30 +86,29 @@ class Excel
     }
 
     /**
-     * 输出到浏览器(需要设置header头)
+     * 输出到浏览器——设置header头
      * @param string $fileName
      * @param string $fileType
      */
     private static function excelBrowserExport($fileName, $fileType)
     {
-        //文件名称校验
-        if (!$fileName) {
-            trigger_error('文件名不能为空', E_USER_ERROR);
-        }
+        if (!$fileName) trigger_error('文件名不能为空', E_USER_ERROR);
 
-        //Excel文件类型校验
-        $type = ['Excel2007', 'Xlsx', 'Excel5', 'xls'];
-        if (!in_array($fileType, $type)) {
-            trigger_error('未知文件类型', E_USER_ERROR);
-        }
+        $type = ['Excel2007', 'Xlsx', 'Excel5', 'xls', 'Csv'];
+
+        if (!in_array($fileType, $type)) trigger_error('未知文件类型', E_USER_ERROR);
 
         if ($fileType == 'Excel2007' || $fileType == 'Xlsx') {
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header('Content-Disposition: attachment;filename="' . $fileName . '.xlsx"');
+            header('Content-Disposition: attachment;filename=' . $fileName . '.xlsx');
             header('Cache-Control: max-age=0');
-        } else { //Excel5
+        } elseif ($fileType == 'Excel5' || $fileType == 'xls') {
             header('Content-Type: application/vnd.ms-excel');
-            header('Content-Disposition: attachment;filename="' . $fileName . '.xls"');
+            header('Content-Disposition: attachment;filename=' . $fileName . '.xls');
+            header('Cache-Control: max-age=0');
+        } elseif ($fileType == 'Csv') {
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment;filename=' . $fileName . '.csv');
             header('Cache-Control: max-age=0');
         }
     }

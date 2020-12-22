@@ -144,7 +144,7 @@ class TestController extends Controller
             ],
         ];
 
-       Excel::export2Local($header, $data, 'aaa', 'Xlsx');
+       Excel::export2Browser($header, $data, 'aaa', 'Csv');
     }
 
 }
