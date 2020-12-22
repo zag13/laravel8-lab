@@ -31,7 +31,7 @@ class Excel
         self::excelBrowserExport($fileName, $fileType);
         $writer->save('php://output');
         $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet);
+        unset($spreadsheet, $writer);
     }
 
     /**
@@ -56,7 +56,7 @@ class Excel
         $tmp = $path . $fileName . '.' . strtolower($fileType);
         $writer->save($tmp);
         $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet);
+        unset($spreadsheet, $writer);
     }
 
     /**
