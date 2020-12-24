@@ -7,41 +7,13 @@
  * Time: 4:52 下午
  */
 
-
-namespace App\Utils;
-
-
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Support\Facades\Storage;
-
-class CommonUtils
-{
-    /**
-     * 存储网络资源到本地
-     * @param string $url
-     * @param string $tmp
-     * @return string
-     */
-    public static function storageFromUrl($url = '', $tmp = ''): string
-    {
-        if (empty($url) || empty($tmp)) throw new \Exception('未传入 url 或 tmp');
-        try {
-            $client = new Client();
-            $data = $client->request('get', $url)->getBody()->getContents();
-            Storage::disk('local')->put($tmp, $data);
-        } catch (GuzzleException $exception) {
-            throw new \Exception($exception->getMessage());
-        }
-        return storage_path('app/') . $tmp;
-    }
-
+if (!function_exists('rrmDir')) {
     /**
      * 递归删除目录
      * @param string $src
      * @return bool
      */
-    public static function rrmDir($src = ''): bool
+    function rrmDir($src = '')
     {
         if (empty($src)) return true;
 
@@ -50,7 +22,7 @@ class CommonUtils
             if (($file != '.') && ($file != '..')) {
                 $full = $src . '/' . $file;
                 if (is_dir($full)) {
-                    self::rrmDir($full);
+                    rrmDir($full);
                 } else {
                     unlink($full);
                 }
@@ -59,7 +31,9 @@ class CommonUtils
         closedir($dir);
         rmdir($src);
     }
+}
 
+if (!function_exists('list2tree')) {
     /**
      * 列表结构转树状结构
      * @param        $list
@@ -69,7 +43,7 @@ class CommonUtils
      * @param int    $root
      * @return array
      */
-    public static function list2tree($list, $pk = 'id', $pid = 'pid', $child = 'children', $root = 0): array
+    function list2tree($list, $pk = 'id', $pid = 'pid', $child = 'children', $root = 0): array
     {
         $tree = [];
         if (!is_array($list)) return $tree;
@@ -94,14 +68,16 @@ class CommonUtils
 
         return $tree;
     }
+}
 
+if (!function_exists('tree2list')) {
     /**
      * 树状结构转列表结构
      * @param        $tree
      * @param string $child
      * @return array
      */
-    public static function tree2list($tree, $child = 'children'): array
+    function tree2list($tree, $child = 'children'): array
     {
         static $list = [];
         foreach ($tree as $branch) {
@@ -109,21 +85,23 @@ class CommonUtils
             unset($tmp[$child]);
             $list[] = $tmp;
             if (isset($branch[$child]) && !empty($branch[$child])) {
-                self::tree2list($branch[$child]);
+                tree2list($branch[$child]);
             }
         }
         return $list;
     }
+}
 
+if (!function_exists('getSubtree')) {
     /**
-     * 获取对应的子树
+     * 获取对应子树
      * @param        $tree
      * @param        $name
      * @param string $fileds
      * @param string $child
-     * @return array|mixed
+     * @return array
      */
-    public static function getSubtree($tree, $name, $fileds = 'name', $child = 'children'): array
+    function getSubtree($tree, $name, $fileds = 'name', $child = 'children'): array
     {
         $legalTree = [];
         foreach ($tree as $branch) {
@@ -132,7 +110,7 @@ class CommonUtils
                 break;
             }
             if (isset($branch[$child])) {
-                $legalTree = self::getSubtree($branch[$child], $name, $fileds, $child);
+                $legalTree = getSubtree($branch[$child], $name, $fileds, $child);
                 break;
             }
         }

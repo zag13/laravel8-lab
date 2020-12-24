@@ -7,7 +7,7 @@
  */
 
 
-namespace App\Utils;
+namespace App\Service\Utils;
 
 
 use Illuminate\Support\Facades\Storage;

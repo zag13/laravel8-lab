@@ -12,8 +12,8 @@ namespace App\Http\Controllers\Test;
 
 use App\Http\Controllers\Core\Controller;
 use App\Models\User;
-use App\Utils\CommonUtils;
-use App\Utils\Excel;
+use App\Service\Utils\Excel;
+use App\Service\Utils\File;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
@@ -52,7 +52,7 @@ class TestController extends Controller
         }
 
         $tmp = 'uploads/excel/' . uniqid() . '.' . $fileType;
-        $filePath = CommonUtils::storageFromUrl($fileUrl, $tmp);
+        $filePath = File::storageFromUrl($fileUrl, $tmp);
 
         $spreadsheet = $reader->load($filePath);
         $worksheet = $spreadsheet->getActiveSheet();
@@ -74,7 +74,7 @@ class TestController extends Controller
             ];
         }
 
-        CommonUtils::rrmDir(dirname($filePath));
+        rrmDir(dirname($filePath));
 
         // 处理数据
         var_dump($data);
@@ -93,39 +93,39 @@ class TestController extends Controller
         //内容
         $data = [
             [
-                'a' =>'小明',
-                'b' =>'男',
-                'c' =>'专科',
-                'd' =>'18',
-                'e' =>'175'
+                'a' => '小明',
+                'b' => '男',
+                'c' => '专科',
+                'd' => '18',
+                'e' => '175'
             ],
             [
-                'a' =>'小红',
-                'b' =>'女',
-                'c' =>'本科',
-                'd' =>'18',
-                'e' =>'155'
+                'a' => '小红',
+                'b' => '女',
+                'c' => '本科',
+                'd' => '18',
+                'e' => '155'
             ],
             [
-               'a' =>'小蓝',
-               'b' =>'男',
-               'c' =>'专科',
-               'd' =>'20',
-               'e' =>'170'
+                'a' => '小蓝',
+                'b' => '男',
+                'c' => '专科',
+                'd' => '20',
+                'e' => '170'
             ],
             [
-             'a' => '张三',
-             'b' => '男',
-             'c' => '本科',
-             'd' => '19',
-             'e' => '165'
+                'a' => '张三',
+                'b' => '男',
+                'c' => '本科',
+                'd' => '19',
+                'e' => '165'
             ],
             [
-               'a' => '李四',
-               'b' => '男',
-               'c' => '专科',
-               'd' => '22',
-               'e' => '175'
+                'a' => '李四',
+                'b' => '男',
+                'c' => '专科',
+                'd' => '22',
+                'e' => '175'
             ]
         ];
 
