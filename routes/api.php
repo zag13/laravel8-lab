@@ -45,5 +45,7 @@ Route::group([
 
     Route::post('fileReader', [TestController::class, 'fileReader']);
     Route::get('fileExport', [TestController::class, 'fileExport']);
+    Route::get('tree', [TestController::class, 'tree']);
+    Route::get('queue', [TestController::class, 'queue']);
 });
 

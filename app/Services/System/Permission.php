@@ -7,7 +7,7 @@
  */
 
 
-namespace App\Service\System;
+namespace App\Services\System;
 
 
 class Permission

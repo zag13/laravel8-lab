@@ -12,8 +12,8 @@ namespace App\Http\Controllers\Test;
 
 use App\Http\Controllers\Core\Controller;
 use App\Models\User;
-use App\Service\Utils\Excel;
-use App\Service\Utils\File;
+use App\Services\Utils\Excel;
+use App\Services\Utils\File;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
@@ -132,4 +132,24 @@ class TestController extends Controller
         Excel::export2Browser($header, $data, 'aaa', 'Csv');
     }
 
+    public function tree()
+    {
+        $list = [
+            ['id' => 1, 'name' => '爷', 'parent' => 0],
+            ['id' => 2, 'name' => '父', 'parent' => 1],
+            ['id' => 3, 'name' => '伯', 'parent' => 1],
+            ['id' => 4, 'name' => 'me', 'parent' => 2],
+            ['id' => 5, 'name' => '二爷爷', 'parent' => 0],
+        ];
+
+        $tree = list2tree($list,'id','parent');
+        $myTree = getSubtree($tree, '父');
+        $list2 = tree2list($myTree);
+        print_r($list2);
+    }
+
+    public function queue()
+    {
+
+    }
 }

@@ -7,7 +7,7 @@
  */
 
 
-namespace App\Service\Utils;
+namespace App\Services\Utils;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -24,13 +24,11 @@ class File
     public static function storageFromUrl($url = '', $tmp = ''): string
     {
         if (empty($url) || empty($tmp)) throw new \Exception('未传入 url 或 tmp');
-        try {
-            $client = new Client();
-            $data = $client->request('get', $url)->getBody()->getContents();
-            Storage::disk('local')->put($tmp, $data);
-        } catch (GuzzleException $exception) {
-            throw new \Exception($exception->getMessage());
-        }
+
+        $client = new Client();
+        $data = $client->request('get', $url)->getBody()->getContents();
+        Storage::disk('local')->put($tmp, $data);
+
         return storage_path('app/') . $tmp;
     }
 
