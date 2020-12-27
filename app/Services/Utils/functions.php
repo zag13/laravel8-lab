@@ -79,15 +79,18 @@ if (!function_exists('tree2list')) {
      */
     function tree2list($tree, $child = 'children'): array
     {
-        static $list = [];
+        if (!isset($list)) static $list = [];
+
         foreach ($tree as $branch) {
             $tmp = $branch;
-            unset($tmp[$child]);
+            if (isset($branch[$child])) unset($tmp[$child]);
             $list[] = $tmp;
+
             if (isset($branch[$child]) && !empty($branch[$child])) {
                 tree2list($branch[$child]);
             }
         }
+
         return $list;
     }
 }

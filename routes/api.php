@@ -38,7 +38,7 @@ Route::group([
 
 
 Route::group([
-    'middleware' => 'jwt.auth',
+//    'middleware' => 'jwt.auth',
     'prefix' => 'test'
 ], function () {
     Route::get('user', [TestController::class, 'user']);

@@ -11,10 +11,13 @@ namespace App\Http\Controllers\Test;
 
 
 use App\Http\Controllers\Core\Controller;
+use App\Jobs\ExcelDownload;
 use App\Models\User;
 use App\Services\Utils\Excel;
 use App\Services\Utils\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
@@ -142,14 +145,84 @@ class TestController extends Controller
             ['id' => 5, 'name' => '二爷爷', 'parent' => 0],
         ];
 
-        $tree = list2tree($list,'id','parent');
-        $myTree = getSubtree($tree, '父');
-        $list2 = tree2list($myTree);
+        $tree = list2tree($list, 'id', 'parent');
+        $myTree = getSubtree($tree, '爷');
+        $tmp[] = $myTree;
+        $list2 = tree2list($tmp);
         print_r($list2);
     }
 
-    public function queue()
+    public function queue(Request $request)
     {
+        $this->validate($request, [
+            'download' => 'integer'
+        ]);
+        //头信息
+        $header = [
+            'a' => '姓名',
+            'b' => '性别',
+            'c' => '学历',
+            'd' => '年龄',
+            'e' => '身高',
+        ];
+        //内容
+        $data = [
+            [
+                'a' => '小明',
+                'b' => '男',
+                'c' => '专科',
+                'd' => '18',
+                'e' => '175'
+            ],
+            [
+                'a' => '小红',
+                'b' => '女',
+                'c' => '本科',
+                'd' => '18',
+                'e' => '155'
+            ],
+            [
+                'a' => '小蓝',
+                'b' => '男',
+                'c' => '专科',
+                'd' => '20',
+                'e' => '170'
+            ],
+            [
+                'a' => '张三',
+                'b' => '男',
+                'c' => '本科',
+                'd' => '19',
+                'e' => '165'
+            ],
+            [
+                'a' => '李四',
+                'b' => '男',
+                'c' => '专科',
+                'd' => '22',
+                'e' => '175'
+            ]
+        ];
 
+        try {
+            DB::beginTransaction();
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+            $className = $backtrace[0]['class'];
+            $actionName = $backtrace[0]['function'];
+            $data = [
+
+            ];
+            var_dump($className, $actionName);
+            die();
+        } catch (\Throwable $throwable) {
+            DB::rollBack();
+            return $this->respFail('插入失败');
+        }
+        DB::commit();
+
+        $job = (new ExcelDownload())->delay(Carbon::now()->addMinutes(1));
+        dispatch($job)->onQueue('ExcelDownload');
+
+        return $this->respSuccess([], '下载队列添加成功');
     }
 }

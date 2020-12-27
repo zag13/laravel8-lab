@@ -100,15 +100,15 @@ class Excel
     {
         if (!$fileName) trigger_error('文件名不能为空', E_USER_ERROR);
 
-        $type = ['Excel2007', 'Xlsx', 'Excel5', 'xls', 'Csv'];
+        $type = ['Xlsx', 'Xls', 'Csv'];
 
         if (!in_array($fileType, $type)) trigger_error('未知文件类型', E_USER_ERROR);
 
-        if ($fileType == 'Excel2007' || $fileType == 'Xlsx') {
+        if ($fileType == 'Xlsx') {
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             header('Content-Disposition: attachment;filename=' . $fileName . '.xlsx');
             header('Cache-Control: max-age=0');
-        } elseif ($fileType == 'Excel5' || $fileType == 'xls') {
+        } elseif ($fileType == 'Xls') {
             header('Content-Type: application/vnd.ms-excel');
             header('Content-Disposition: attachment;filename=' . $fileName . '.xls');
             header('Cache-Control: max-age=0');
