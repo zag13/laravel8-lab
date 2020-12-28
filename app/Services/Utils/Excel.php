@@ -78,8 +78,9 @@ class Excel
 
         return [
             'fileName' => $fileName,
-            'fileSize' => formatBytes($fileSize, 2),
-            'fileLink' => $tmp
+            'fileType' => $fileType,
+            'fileSize' => $fileSize,
+            'fileLink' => 'download/excel/' . $tmp
         ];
     }
 
@@ -97,7 +98,6 @@ class Excel
             if (isset($params['limit'])) $params['limit'] = 1000;
             if (isset($params['offset'])) $params['offset'] = 0;
 
-//            DB::beginTransaction();
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
             $data = [
                 'class_name' => $backtrace[1]['class'],
@@ -110,10 +110,8 @@ class Excel
             ExcelDownload::dispatch($downloadLog)->onQueue('ExcelDownload')
                 ->delay(Carbon::now()->addSeconds(10));
         } catch (\Throwable $throwable) {
-//            DB::rollBack();
             throw new \Exception('加入下载列表失败：' . $throwable->getMessage());
         }
-//        DB::commit();
 
         return response()->json([
             'code' => 10000,

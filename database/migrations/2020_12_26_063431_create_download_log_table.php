@@ -19,7 +19,8 @@ class CreateDownloadLogTable extends Migration
             $table->string('action_name')->comment('操作名');
             $table->text('params')->comment('序列化参数');
             $table->string('file_name')->default('')->comment('文件名');
-            $table->string('file_size')->default('')->comment('文件大小');
+            $table->string('file_type')->default('')->comment('文件类型');
+            $table->integer('file_size')->default(0)->comment('文件大小');
             $table->string('file_link')->default('')->comment('文件下载地址');
             $table->bigInteger('creator_id')->nullable()->comment('创建人ID');
             $table->string('creator_name')->nullable()->comment('创建人姓名');

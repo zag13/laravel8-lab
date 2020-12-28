@@ -16,6 +16,7 @@ use App\Services\Utils\Excel;
 use App\Services\Utils\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
@@ -209,5 +210,13 @@ class TestController extends Controller
         if (!empty($result)) return $result;
 
         return $this->respSuccess($data, '正常查看信息');
+    }
+
+    public function download()
+    {
+        $path = storage_path('app/download/excel/');
+        $file = $path . '5fe9d8ee88d5d.csv';
+        $size = Storage::size('download/excel/' . '5fe9d8ee88d5d.csv');
+        return Storage::download('download/excel/' . '5fe9d8ee88d5d.csv','测试.csv');
     }
 }

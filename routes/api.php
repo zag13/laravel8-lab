@@ -47,5 +47,6 @@ Route::group([
     Route::get('fileExport', [TestController::class, 'fileExport']);
     Route::get('tree', [TestController::class, 'tree']);
     Route::get('queue', [TestController::class, 'queue']);
+    Route::get('download', [TestController::class, 'download']);
 });
 

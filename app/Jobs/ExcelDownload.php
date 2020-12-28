@@ -41,6 +41,7 @@ class ExcelDownload implements ShouldQueue
 
         $data = [
             'file_name' => $res['fileName'],
+            'file_type' => $res['fileType'],
             'file_size' => $res['fileSize'],
             'file_link' => $res['fileLink']
         ];
