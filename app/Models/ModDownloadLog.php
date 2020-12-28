@@ -15,4 +15,9 @@ use App\Models\Core\Model;
 class ModDownloadLog extends Model
 {
     public $table = "download_log";
+
+    protected $fillable = [
+        'class_name', 'action_name', 'params', 'file_name', 'file_size', 'file_link',
+        'creator_id', 'creator_name', 'status'
+    ];
 }

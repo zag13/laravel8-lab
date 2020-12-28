@@ -2,45 +2,49 @@
 
 namespace App\Jobs;
 
-use App\Jobs\Middleware\RateLimited;
+use App\Models\ModDownloadLog;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Http\Request;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class ExcelDownload implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /**
-     * Create a new job instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
+    protected $downloadLog;
 
     /**
-     * Get the middleware the job should pass through.
-     *
-     * @return array
+     * Create a new job instance.
+     * @return void
      */
-    public function middleware()
+    public function __construct(ModDownloadLog $downloadLog)
     {
-//        return [new RateLimited];
+        $this->downloadLog = $downloadLog;
     }
 
     /**
      * Execute the job.
-     *
      * @return void
      */
     public function handle()
     {
-        //
+        Log::debug($this->downloadLog);
+        $className = $this->downloadLog['class_name'];
+        $actionName = $this->downloadLog['action_name'];
+        $params = (new Request())->merge(unserialize($this->downloadLog['params']));
+
+        $res = (new $className)->$actionName($params);
+
+        $data = [
+            'file_name' => $res['fileName'],
+            'file_size' => $res['fileSize'],
+            'file_link' => $res['fileLink']
+        ];
+
+        $this->downloadLog->update($data);
     }
 }

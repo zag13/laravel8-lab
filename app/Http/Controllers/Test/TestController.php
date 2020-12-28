@@ -11,13 +11,11 @@ namespace App\Http\Controllers\Test;
 
 
 use App\Http\Controllers\Core\Controller;
-use App\Jobs\ExcelDownload;
 use App\Models\User;
 use App\Services\Utils\Excel;
 use App\Services\Utils\File;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
@@ -132,7 +130,7 @@ class TestController extends Controller
             ]
         ];
 
-        Excel::export2Browser($header, $data, 'aaa', 'Csv');
+        Excel::export($header, $data, 'aaa', 'Csv');
     }
 
     public function tree()
@@ -155,9 +153,13 @@ class TestController extends Controller
     public function queue(Request $request)
     {
         $this->validate($request, [
-            'download' => 'integer'
+            'download' => 'integer|in:1,2'
         ]);
-        //头信息
+
+        $params = $request->all();
+
+        Excel::add2Queue($params);
+
         $header = [
             'a' => '姓名',
             'b' => '性别',
@@ -165,7 +167,6 @@ class TestController extends Controller
             'd' => '年龄',
             'e' => '身高',
         ];
-        //内容
         $data = [
             [
                 'a' => '小明',
@@ -204,25 +205,9 @@ class TestController extends Controller
             ]
         ];
 
-        try {
-            DB::beginTransaction();
-            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-            $className = $backtrace[0]['class'];
-            $actionName = $backtrace[0]['function'];
-            $data = [
+        $result = Excel::export($header, $data, '测试文件', 'Csv', $params['download']);
+        if (!empty($result)) return $result;
 
-            ];
-            var_dump($className, $actionName);
-            die();
-        } catch (\Throwable $throwable) {
-            DB::rollBack();
-            return $this->respFail('插入失败');
-        }
-        DB::commit();
-
-        $job = (new ExcelDownload())->delay(Carbon::now()->addMinutes(1));
-        dispatch($job)->onQueue('ExcelDownload');
-
-        return $this->respSuccess([], '下载队列添加成功');
+        return $this->respSuccess($data, '正常查看信息');
     }
 }

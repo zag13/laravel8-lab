@@ -120,3 +120,27 @@ if (!function_exists('getSubtree')) {
         return $legalTree;
     }
 }
+
+if (!function_exists('formatBytes')) {
+
+    /**
+     * 将 byte 转为 B,KB,MB,GB,TB
+     * @param int $size
+     * @param int $type
+     * @return string
+     */
+    function formatBytes(int $size, int $type = 1): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        for ($i = 0; $size >= 1024 && $i < 4; $i++) {
+            $size /= 1024;
+        }
+
+        if ($type == 2) {
+            return $units[$i] . ' ' . round($size, 2);
+        }
+
+        return round($size, 2) . $units[$i];
+    }
+}

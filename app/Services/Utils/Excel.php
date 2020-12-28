@@ -10,12 +10,28 @@
 namespace App\Services\Utils;
 
 
+use App\Jobs\ExcelDownload;
+use App\Models\ModDownloadLog;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class Excel
 {
+    public static function export($header, $data, $fileName, $fileType, $downloadType = 2)
+    {
+        if (!in_array($downloadType, config('appointment.download'))) return false;
+
+        if ($downloadType == 1) {
+            return self::export2Local($header, $data, $fileName, $fileType);
+        } elseif ($downloadType == 2) {
+            self::export2Browser($header, $data, $fileName, $fileType);
+        }
+    }
+
     /**
      * 输出到浏览器
      * @param $header
@@ -53,10 +69,56 @@ class Excel
         if (!is_dir($path)) {
             Storage::makeDirectory('download/excel/');
         }
-        $tmp = $path . $fileName . '.' . strtolower($fileType);
-        $writer->save($tmp);
+        $tmp = uniqid() . '.' . strtolower($fileType);
+        $writer->save($path . $tmp);
+        $fileSize = Storage::size('download/excel/' . $tmp);
+
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet, $writer);
+
+        return [
+            'fileName' => $fileName,
+            'fileSize' => formatBytes($fileSize, 2),
+            'fileLink' => $tmp
+        ];
+    }
+
+
+    /**
+     * 添加到下载队列（限制为1000条）
+     * @param $params
+     */
+    public static function add2Queue($params)
+    {
+        if ($params['download'] != 1 || php_sapi_name() == 'cli') return true;
+
+        try {
+            $user = Auth::user();
+            if (isset($params['limit'])) $params['limit'] = 1000;
+            if (isset($params['offset'])) $params['offset'] = 0;
+
+//            DB::beginTransaction();
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+            $data = [
+                'class_name' => $backtrace[1]['class'],
+                'action_name' => $backtrace[1]['function'],
+                'params' => serialize($params),
+                'creator_id' => $user['id'],
+                'creator_name' => $user['name']
+            ];
+            $downloadLog = ModDownloadLog::create($data);
+            ExcelDownload::dispatch($downloadLog)->onQueue('ExcelDownload')
+                ->delay(Carbon::now()->addSeconds(10));
+        } catch (\Throwable $throwable) {
+//            DB::rollBack();
+            throw new \Exception('加入下载列表失败：' . $throwable->getMessage());
+        }
+//        DB::commit();
+
+        return response()->json([
+            'code' => 10000,
+            'msg' => '加入下载列表成功'
+        ])->send();
     }
 
     /**
