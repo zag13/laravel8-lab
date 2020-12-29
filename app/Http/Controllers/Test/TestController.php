@@ -11,6 +11,7 @@ namespace App\Http\Controllers\Test;
 
 
 use App\Http\Controllers\Core\Controller;
+use App\Models\ModDownloadLog;
 use App\Models\User;
 use App\Services\Utils\Excel;
 use App\Services\Utils\File;
@@ -84,7 +85,6 @@ class TestController extends Controller
 
     public function fileExport()
     {
-        //头信息
         $header = [
             'a' => '姓名',
             'b' => '性别',
@@ -92,7 +92,6 @@ class TestController extends Controller
             'd' => '年龄',
             'e' => '身高',
         ];
-        //内容
         $data = [
             [
                 'a' => '小明',
@@ -131,24 +130,7 @@ class TestController extends Controller
             ]
         ];
 
-        Excel::export($header, $data, 'aaa', 'Csv');
-    }
-
-    public function tree()
-    {
-        $list = [
-            ['id' => 1, 'name' => '爷', 'parent' => 0],
-            ['id' => 2, 'name' => '父', 'parent' => 1],
-            ['id' => 3, 'name' => '伯', 'parent' => 1],
-            ['id' => 4, 'name' => 'me', 'parent' => 2],
-            ['id' => 5, 'name' => '二爷爷', 'parent' => 0],
-        ];
-
-        $tree = list2tree($list, 'id', 'parent');
-        $myTree = getSubtree($tree, '爷');
-        $tmp[] = $myTree;
-        $list2 = tree2list($tmp);
-        print_r($list2);
+        Excel::export($header, $data, 'aaa');
     }
 
     public function queue(Request $request)
@@ -212,11 +194,20 @@ class TestController extends Controller
         return $this->respSuccess($data, '正常查看信息');
     }
 
-    public function download()
+    public function download(Request $request)
     {
-        $path = storage_path('app/download/excel/');
-        $file = $path . '5fe9d8ee88d5d.csv';
-        $size = Storage::size('download/excel/' . '5fe9d8ee88d5d.csv');
-        return Storage::download('download/excel/' . '5fe9d8ee88d5d.csv','测试.csv');
+        $this->validate($request, [
+            'id' => 'required|integer'
+        ]);
+
+        $id = $request->input('id');
+
+        $user = Auth::user();
+        $downloadLog = ModDownloadLog::where('id', '=', $id)->firstOrFail();
+        if ($downloadLog['creator_id'] != $user['id']) throw new \Exception('你无权下载该数据');
+
+        $fileFullName = $downloadLog['file_name'] . '.' . strtolower($downloadLog['file_type']);
+
+        return Storage::download($downloadLog['file_link'], $fileFullName);
     }
 }

@@ -14,14 +14,22 @@ use App\Jobs\ExcelDownload;
 use App\Models\ModDownloadLog;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class Excel
 {
-    public static function export($header, $data, $fileName, $fileType, $downloadType = 2)
+    /**
+     * 通用导出
+     * @param        $header
+     * @param        $data
+     * @param        $fileName
+     * @param string $fileType
+     * @param int    $downloadType
+     * @return array|false
+     */
+    public static function export($header, $data, $fileName, $fileType = 'Csv', $downloadType = 2)
     {
         if (!in_array($downloadType, config('appointment.download'))) return false;
 
@@ -39,7 +47,7 @@ class Excel
      * @param $fileName
      * @param $fileType
      */
-    public static function export2Browser($header, $data, $fileName, $fileType)
+    public static function export2Browser($header, $data, $fileName, $fileType = 'Csv')
     {
         $spreadsheet = self::exportBase($header, $data);
 
@@ -57,7 +65,7 @@ class Excel
      * @param $fileName
      * @param $fileType
      */
-    public static function export2Local($header, $data, $fileName, $fileType)
+    public static function export2Local($header, $data, $fileName, $fileType = 'Csv')
     {
         if (!$fileName) trigger_error('文件名不能为空', E_USER_ERROR);
 
@@ -83,7 +91,6 @@ class Excel
             'fileLink' => 'download/excel/' . $tmp
         ];
     }
-
 
     /**
      * 添加到下载队列（限制为1000条）
