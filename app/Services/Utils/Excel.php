@@ -49,7 +49,7 @@ class Excel
      */
     public static function export2Browser($header, $data, $fileName, $fileType = 'Csv')
     {
-        $spreadsheet = self::exportBase($header, $data);
+        $spreadsheet = self::exportBasic($header, $data);
 
         $writer = IOFactory::createWriter($spreadsheet, $fileType);
         self::excelBrowserExport($fileName, $fileType);
@@ -69,17 +69,18 @@ class Excel
     {
         if (!$fileName) trigger_error('文件名不能为空', E_USER_ERROR);
 
-        $spreadsheet = self::exportBase($header, $data);
+        $spreadsheet = self::exportBasic($header, $data);
 
         $writer = IOFactory::createWriter($spreadsheet, $fileType);
 
-        $path = storage_path('app/download/excel/');
+        $date = date('Y-m-d');
+        $path = storage_path('app/download/excel/') . $date;
         if (!is_dir($path)) {
-            Storage::makeDirectory('download/excel/');
+            Storage::makeDirectory('download/excel/') . $date;
         }
         $tmp = uniqid() . '.' . strtolower($fileType);
         $writer->save($path . $tmp);
-        $fileSize = Storage::size('download/excel/' . $tmp);
+        $fileSize = Storage::size('download/excel/' . $date . $tmp);
 
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet, $writer);
@@ -88,7 +89,7 @@ class Excel
             'fileName' => $fileName,
             'fileType' => $fileType,
             'fileSize' => $fileSize,
-            'fileLink' => 'download/excel/' . $tmp
+            'fileLink' => 'download/excel/' . $date . $tmp
         ];
     }
 
@@ -132,7 +133,7 @@ class Excel
      * @param $data
      * @return Spreadsheet
      */
-    private static function exportBase($header, $data)
+    private static function exportBasic($header, $data)
     {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet()->setTitle('工作表格1');
@@ -145,15 +146,14 @@ class Excel
         unset($col);
 
         $row = 2;
+        $header_key = array_keys($header);
         foreach ($data as $cols) {
-            $col = 1;
-            foreach ($cols as $cellValue) {
-                $sheet->setCellValueByColumnAndRow($col, $row, $cellValue);
-                $col++;
+            for ($col = 1; $col <= count($cols); $col++) {
+                $sheet->setCellValueByColumnAndRow($col, $row, $cols[$header_key[$col - 1]]);
             }
             $row++;
         }
-        unset($row, $col);
+        unset($row);
 
         return $spreadsheet;
     }
