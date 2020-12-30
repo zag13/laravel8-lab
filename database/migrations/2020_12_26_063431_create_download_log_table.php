@@ -24,7 +24,7 @@ class CreateDownloadLogTable extends Migration
             $table->string('file_link')->default('')->comment('文件下载地址');
             $table->bigInteger('creator_id')->nullable()->comment('创建人ID');
             $table->string('creator_name')->nullable()->comment('创建人姓名');
-            $table->tinyInteger('status')->default('1')->comment('0:下载成功 1:准备下载 2:下载中 3:下载异常 4:用户已经点下载 5:不展示');
+            $table->tinyInteger('status')->default('0')->comment('0:准备下载 1:下载成功 2:下载中 3:下载异常 4:用户已经点下载 5:不展示');
             $table->timestamps();
         });
     }

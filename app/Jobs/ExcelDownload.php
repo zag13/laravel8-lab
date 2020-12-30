@@ -44,7 +44,7 @@ class ExcelDownload implements ShouldQueue
             'file_type' => $res['fileType'],
             'file_size' => $res['fileSize'],
             'file_link' => $res['fileLink'],
-            'status' => 0
+            'status' => 1
         ];
 
         $this->downloadLog->update($data);

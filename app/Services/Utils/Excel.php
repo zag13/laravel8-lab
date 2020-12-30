@@ -73,14 +73,13 @@ class Excel
 
         $writer = IOFactory::createWriter($spreadsheet, $fileType);
 
-        $date = date('Y-m-d');
-        $path = storage_path('app/download/excel/') . $date;
+        $path = storage_path('app/download/excel/');
         if (!is_dir($path)) {
-            Storage::makeDirectory('download/excel/') . $date;
+            Storage::makeDirectory('download/excel/');
         }
         $tmp = uniqid() . '.' . strtolower($fileType);
         $writer->save($path . $tmp);
-        $fileSize = Storage::size('download/excel/' . $date . $tmp);
+        $fileSize = Storage::size('download/excel/' . $tmp);
 
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet, $writer);
@@ -89,7 +88,7 @@ class Excel
             'fileName' => $fileName,
             'fileType' => $fileType,
             'fileSize' => $fileSize,
-            'fileLink' => 'download/excel/' . $date . $tmp
+            'fileLink' => 'download/excel/' . $tmp
         ];
     }
 
@@ -99,7 +98,7 @@ class Excel
      */
     public static function add2Queue($params)
     {
-        if ($params['download'] != 1 || php_sapi_name() == 'cli') return true;
+        if ($params['download'] != 1 || php_sapi_name() == 'cli') return false;
 
         try {
             $user = Auth::user();
@@ -121,10 +120,14 @@ class Excel
             throw new \Exception('加入下载列表失败：' . $throwable->getMessage());
         }
 
+        // send 方法返回前端后，后续代码依旧运行，
+        // 所以要在控制器强制返回而不是使用 send 方法
         return response()->json([
             'code' => 10000,
             'msg' => '加入下载列表成功'
-        ])->send();
+        ]);
+        // 也可以用这种方法来终止后续代码的运行，但是感觉不爽
+        // throw new \Exception('加入下载列表成功','10000');
     }
 
     /**

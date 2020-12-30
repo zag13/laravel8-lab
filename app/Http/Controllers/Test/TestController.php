@@ -141,7 +141,8 @@ class TestController extends Controller
 
         $params = $request->all();
 
-        Excel::add2Queue($params);
+        $result = Excel::add2Queue($params);
+        if (!empty($result)) return $result;
 
         $header = [
             'a' => '姓名',
