@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\System;
 
+use App\Events\LoginEvent;
 use App\Http\Controllers\Core\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -29,6 +31,7 @@ class AuthController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
+        event(new LoginEvent(Auth::user()));
         return $this->respondWithToken($token);
     }
 

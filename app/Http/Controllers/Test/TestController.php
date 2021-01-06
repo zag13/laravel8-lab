@@ -12,11 +12,12 @@ namespace App\Http\Controllers\Test;
 
 use App\Http\Controllers\Core\Controller;
 use App\Models\ModDownloadLog;
-use App\Models\User;
+use App\Services\Utils\ZLog;
 use App\Services\Utils\Excel;
 use App\Services\Utils\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
@@ -26,6 +27,16 @@ class TestController extends Controller
 {
     public function user(Request $request)
     {
+        ZLog::info('哈哈呵呵1', 'user');
+        Log::info('哈哈呵呵1');
+
+//        Log::channel('single')->info('haha');
+        /*$db = User::select('id')->groupBy('id');
+        $data = User::from($db, 'u')->toSql();
+        $data2 = DB::table($db, 'u')->toSql();
+
+        dd($data, $data2);
+
         $this->validate($request, [
             'id' => 'required|integer'
         ]);
@@ -34,7 +45,7 @@ class TestController extends Controller
 
         $data = User::where('id', '=', $params['id'])->first()->toArray();
 
-        return response()->json($data);
+        return response()->json($data);*/
     }
 
     public function fileReader()
@@ -210,5 +221,34 @@ class TestController extends Controller
         $fileFullName = $downloadLog['file_name'] . '.' . strtolower($downloadLog['file_type']);
 
         return Storage::download($downloadLog['file_link'], $fileFullName);
+    }
+
+    public function collect()
+    {
+        $array = [
+            'a' => ['title' => 'a', 'aaa' => 1, 'bbb' => 2, 'ccc' => 3],
+            'b' => ['title' => 'b', 'aaa' => 1, 'bbb' => 2, 'ccc' => 3],
+            'c' => ['title' => 'c', 'aaa' => 1, 'bbb' => 2, 'ccc' => 3],
+        ];
+        $data = collect($array)->reduce(function ($result, $item) {
+            if ($result == null) {
+                $result = [
+                    'aaa' => 0,
+                    'bbb' => 0,
+                    'ccc' => 0
+                ];
+            }
+            $result['aaa'] += $item['aaa'];
+            $result['bbb'] += $item['bbb'];
+            $result['ccc'] += $item['ccc'];
+
+            return $result;
+        });
+        dd($data);
+        $data = [];
+        $data['aaa'] = collect($array)->sum('aaa');
+        $data['bbb'] = collect($array)->sum('bbb');
+        $data['ccc'] = collect($array)->sum('ccc');
+        dd($data);
     }
 }

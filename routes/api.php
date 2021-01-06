@@ -48,5 +48,6 @@ Route::group([
     Route::get('tree', [TestController::class, 'tree']);
     Route::get('queue', [TestController::class, 'queue']);
     Route::get('download', [TestController::class, 'download']);
+    Route::get('collect', [TestController::class, 'collect']);
 });
 
