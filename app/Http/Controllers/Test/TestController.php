@@ -12,9 +12,9 @@ namespace App\Http\Controllers\Test;
 
 use App\Http\Controllers\Core\Controller;
 use App\Models\ModDownloadLog;
-use App\Services\Utils\ZLog;
 use App\Services\Utils\Excel;
 use App\Services\Utils\File;
+use App\Services\Utils\ZLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -27,9 +27,9 @@ class TestController extends Controller
 {
     public function user(Request $request)
     {
-        ZLog::info('哈哈呵呵1', 'user');
+        ZLog::channel('login')->debug('haha', ['a' => 1]);
         Log::info('哈哈呵呵1');
-
+//        Log::channel('zlog')->info('');
 //        Log::channel('single')->info('haha');
         /*$db = User::select('id')->groupBy('id');
         $data = User::from($db, 'u')->toSql();

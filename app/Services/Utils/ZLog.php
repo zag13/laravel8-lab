@@ -10,33 +10,35 @@
 namespace App\Services\Utils;
 
 
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
 class ZLog
 {
-    public static function info($msg = '', $name = 'info')
+    public static function channel($name)
     {
-        $log = new Logger($name);
-//        $log->setHandlers()
-
-        $date = date('Y-m-d', time());
-        $log->pushHandler(new StreamHandler(storage_path('logs/info/' . $date . '.log'), Logger::INFO));
-        $log->info($msg);
+        $logger = new Logger($name);
+        $logger->pushHandler(self::handles($name));
+        return $logger;
     }
 
-    public static function custom($directory, $name, $msg = '', $level = Logger::INFO)
+    private static function handles($directory)
     {
-        if (!empty($directory)) throw new \Exception('未定义目录名');
-        if (!empty($name)) throw new \Exception('未定义消息主题');
-
-        $log = new Logger($name);
         $date = date('Y-m-d', time());
-        $log->pushHandler(new StreamHandler(storage_path('logs/' . $directory . "/$date.log"), $level));
-        $log->info($msg);
+
+        // Create a handler
+        $stream = new StreamHandler(storage_path('logs/' . $directory . "/$date.log"));
+        return $stream->setFormatter(self::format());
     }
 
-    private function handles()
+    private static function format()
     {
+        // the default date format is "Y-m-d\TH:i:sP"
+        $dateFormat = "Y-m-d H:i:s";
+        // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
+        $output = "[%datetime%] %channel%.%level_name%: %message% %context%\n";
+        // finally, create a formatter
+        return new LineFormatter($output, $dateFormat);
     }
 }
