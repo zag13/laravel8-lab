@@ -100,10 +100,6 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
-        'zlog' => [
-            'driver' => 'custom',
-            'via' => \App\Logging\CreateCustomLogger::class
-        ]
     ],
 
 ];

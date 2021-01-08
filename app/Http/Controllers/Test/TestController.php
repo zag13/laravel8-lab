@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Test;
 
 use App\Http\Controllers\Core\Controller;
 use App\Models\ModDownloadLog;
+use App\Models\User;
 use App\Services\Utils\Excel;
 use App\Services\Utils\File;
 use App\Services\Utils\ZLog;
@@ -27,16 +28,6 @@ class TestController extends Controller
 {
     public function user(Request $request)
     {
-        ZLog::channel('login')->debug('haha', ['a' => 1]);
-        Log::info('哈哈呵呵1');
-//        Log::channel('zlog')->info('');
-//        Log::channel('single')->info('haha');
-        /*$db = User::select('id')->groupBy('id');
-        $data = User::from($db, 'u')->toSql();
-        $data2 = DB::table($db, 'u')->toSql();
-
-        dd($data, $data2);
-
         $this->validate($request, [
             'id' => 'required|integer'
         ]);
@@ -45,7 +36,7 @@ class TestController extends Controller
 
         $data = User::where('id', '=', $params['id'])->first()->toArray();
 
-        return response()->json($data);*/
+        return response()->json($data);
     }
 
     public function fileReader()
