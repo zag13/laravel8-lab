@@ -8,5 +8,5 @@
 
 return [
     // 是否开启 SQL 日志
-    'logSql' => env('LOG_SQL')
+    'logSql' => env('LOG_SQL', false)
 ];
