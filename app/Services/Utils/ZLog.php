@@ -13,6 +13,7 @@ namespace App\Services\Utils;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use function Symfony\Component\Translation\t;
 
 class ZLog
 {
@@ -39,6 +40,6 @@ class ZLog
         // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
         $output = "[%datetime%] %channel%.%level_name%: %message% %context%\n";
         // finally, create a formatter
-        return new LineFormatter($output, $dateFormat);
+        return new LineFormatter($output, $dateFormat, true, true);
     }
 }
