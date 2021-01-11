@@ -38,13 +38,7 @@ class QueryListener
 
         $sql = str_replace('?', "'%s'", $event->sql);
 
-        if (strpos($sql, ':') !== false && $event->bindings) {
-            foreach ($event->bindings as $k => $value) {
-                $sql = str_replace($k, $value, $sql);
-            }
-        }
-
-        $sqlInfo = !empty($event->bindings) ? @vsprintf($sql, $event->bindings) : $sql;
+        $sqlInfo = vsprintf($sql, $event->bindings);
 
         ZLog::channel('sql')->info($sqlInfo);
     }
