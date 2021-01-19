@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class ExcelDownload implements ShouldQueue
 {
@@ -34,7 +33,6 @@ class ExcelDownload implements ShouldQueue
      */
     public function handle()
     {
-        Log::debug($this->downloadLog);
         $className = $this->downloadLog['class_name'];
         $actionName = $this->downloadLog['action_name'];
         $params = (new Request())->merge(unserialize($this->downloadLog['params']));
