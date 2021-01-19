@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\System\AuthController;
-use App\Http\Controllers\Test\TestController;
+use App\Http\Controllers\TestController;
 use App\Http\Controllers\System\PermissionController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,5 +49,6 @@ Route::group([
     Route::get('queue', [TestController::class, 'queue']);
     Route::get('download', [TestController::class, 'download']);
     Route::get('collect', [TestController::class, 'collect']);
+    Route::get('broadcast', [TestController::class, 'broadcast']);
 });
 

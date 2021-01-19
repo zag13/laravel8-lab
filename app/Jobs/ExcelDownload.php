@@ -3,12 +3,14 @@
 namespace App\Jobs;
 
 use App\Models\ModDownloadLog;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Request;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class ExcelDownload implements ShouldQueue
@@ -36,6 +38,9 @@ class ExcelDownload implements ShouldQueue
         $className = $this->downloadLog['class_name'];
         $actionName = $this->downloadLog['action_name'];
         $params = (new Request())->merge(unserialize($this->downloadLog['params']));
+
+        $user = User::find($this->downloadLog['creator_id']);
+        $user && Auth::login($user, true);
 
         $res = (new $className)->$actionName($params);
 

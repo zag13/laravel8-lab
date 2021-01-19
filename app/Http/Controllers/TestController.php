@@ -7,18 +7,17 @@
  */
 
 
-namespace App\Http\Controllers\Test;
+namespace App\Http\Controllers;
 
 
+use App\Events\UserSendMessage;
 use App\Http\Controllers\Core\Controller;
 use App\Models\ModDownloadLog;
 use App\Models\User;
 use App\Services\Utils\Excel;
 use App\Services\Utils\File;
-use App\Services\Utils\ZLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
@@ -241,5 +240,13 @@ class TestController extends Controller
         $data['bbb'] = collect($array)->sum('bbb');
         $data['ccc'] = collect($array)->sum('ccc');
         dd($data);
+    }
+
+    public function broadcast()
+    {
+        $user = User::find(1);
+        $message = 'hello,world!';
+        $groupId = 0;
+        event(new UserSendMessage($user, $message, $groupId));
     }
 }

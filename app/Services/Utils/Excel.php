@@ -26,7 +26,7 @@ class Excel
      * @param        $data
      * @param        $fileName
      * @param string $fileType
-     * @param int    $downloadType
+     * @param int $downloadType
      * @return array|false
      */
     public static function export($header, $data, $fileName, $fileType = 'Csv', $downloadType = 2)
@@ -109,7 +109,7 @@ class Excel
             $data = [
                 'class_name' => $backtrace[1]['class'],
                 'action_name' => $backtrace[1]['function'],
-                'params' => serialize($params),
+                'params' => json_encode($params),
                 'creator_id' => $user['id'],
                 'creator_name' => $user['name']
             ];
