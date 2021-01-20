@@ -35,7 +35,7 @@ class ExcelDownload implements ShouldQueue
     {
         $className = $this->downloadLog['class_name'];
         $actionName = $this->downloadLog['action_name'];
-        $params = (new Request())->merge(unserialize($this->downloadLog['params']));
+        $params = (new Request())->merge(json_decode($this->downloadLog['params'], true));
 
         $user = User::find($this->downloadLog['creator_id']);
         $user && Auth::login($user, true);

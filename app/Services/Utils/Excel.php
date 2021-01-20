@@ -115,7 +115,7 @@ class Excel
             ];
             $downloadLog = ModDownloadLog::create($data);
             ExcelDownload::dispatch($downloadLog)->onQueue('ExcelDownload')
-                ->delay(Carbon::now()->addSeconds(10));
+                ->delay(Carbon::now()->addSeconds(3));
         } catch (\Throwable $throwable) {
             throw new \Exception('加入下载列表失败：' . $throwable->getMessage());
         }
