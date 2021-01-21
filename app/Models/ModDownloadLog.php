@@ -21,4 +21,12 @@ class ModDownloadLog extends Model
         'file_name', 'file_type', 'file_size', 'file_link',
         'creator_id', 'creator_name', 'status'
     ];
+
+    /**
+     * 测试一对一&&一对多关联（belongs）
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'creator_id', 'id');
+    }
 }

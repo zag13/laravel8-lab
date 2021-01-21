@@ -66,4 +66,20 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    /**
+     * 测试一对一关联
+     */
+    public function downloadLog()
+    {
+        return $this->hasOne(ModDownloadLog::class, 'creator_id', 'id');
+    }
+
+    /**
+     * 测试一对多关联
+     */
+    public function downloadLogs()
+    {
+        return $this->hasMany(ModDownloadLog::class, 'creator_id', 'id');
+    }
 }

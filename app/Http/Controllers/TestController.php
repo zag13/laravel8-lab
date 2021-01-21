@@ -249,4 +249,51 @@ class TestController extends Controller
         $groupId = 0;
         event(new UserSendMessage($user, $message, $groupId));
     }
+
+    public function relationships()
+    {
+        // 一对一$user
+//        $user = User::select(['id', 'name'])->find(2)->downloadLog;
+        /*select `id`, `name` from `users` where `users` . `id` = '1' limit 1
+        select * from `download_log` where `download_log` . `creator_id` = '1' and `download_log` . `creator_id` is not null limit 1*/
+
+        // 一对一 (belongs)
+//        $downloadLog = ModDownloadLog::select(['id', 'file_name', 'creator_id'])->find(2)->user;
+        /*select `id`, `file_name`, `creator_id` from `download_log` where `download_log`.`id` = '1' limit 1
+        select * from `users` where `users`.`id` = '1' limit 1 */
+
+        // 一对多
+//        $user = User::select(['id', 'name'])->find(1)->downloadLogs;
+//        foreach ($downloadLogs as $downloadLog) {
+//            echo $downloadLog->file_name;
+//        }
+        /*select `id`, `name` from `users` where `users`.`id` = '1' limit 1
+        select * from `download_log` where `download_log`.`creator_id` = '1' and `download_log`.`creator_id` is not null*/
+
+        // 一对多 (关联查询)
+//        $user = User::select(['id', 'name'])->find(1)->downloadLogs()->select('file_name')->where('id', '=', 2)->get();
+        /*select `id`, `name` from `users` where `users`.`id` = '1' limit 1
+        select `file_name` from `download_log` where `download_log`.`creator_id` = '1' and `download_log`.`creator_id` is not null and `id` = '2'*/
+
+        // 一对多 (belongs) 和一对一基本一样
+
+        // 渴求式加载
+//        $user = User::with('downloadLogs')->get();
+        /*select * from `users`
+        select * from `download_log` where `download_log`.`creator_id` in (1, 2)*/
+
+//        $user = User::with('downloadLogs:file_name,file_type,creator_id')->get()->toArray();
+        /*select * from `users`
+        select `file_name`, `file_type`, `creator_id` from `download_log` where `download_log`.`creator_id` in (1, 2)*/
+
+//        $user = User::with(['downloadLogs' => function ($query) {
+//            // limit 不应该在渴求式条件约束中使用（限制条数的话，会优先满足上面的用户，可能与预期结果不符合）
+//            $query->select(['file_name', 'creator_id'])->limit(1);
+//        }])->limit(1)->get()->toArray();
+
+        // 不建议使用关联进行 创建 和 更新 操作
+
+//        var_dump($user);
+//        var_dump(111);
+    }
 }

@@ -50,5 +50,6 @@ Route::group([
     Route::get('download', [TestController::class, 'download']);
     Route::get('collect', [TestController::class, 'collect']);
     Route::get('broadcast', [TestController::class, 'broadcast']);
+    Route::get('relationships', [TestController::class, 'relationships']);
 });
 
