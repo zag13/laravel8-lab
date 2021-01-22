@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Utils\ZLog;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        /*DB::listen(function ($query) {
+            $sql = str_replace('?', "'%s'", $query->sql);
+            $sqlInfo = 'execution time: ' . $query->time . 'ms; ' . vsprintf($sql, $query->bindings);
+            ZLog::channel('sql')->info($sqlInfo);
+        });*/
     }
 }

@@ -38,7 +38,7 @@ class QueryListener
 
         $sql = str_replace('?', "'%s'", $event->sql);
 
-        $sqlInfo = vsprintf($sql, $event->bindings);
+        $sqlInfo = 'execution time: ' . $event->time . 'ms; ' . vsprintf($sql, $event->bindings);
 
         ZLog::channel('sql')->info($sqlInfo);
     }
