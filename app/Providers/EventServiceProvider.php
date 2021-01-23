@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Events\UserLoginEvent;
-use App\Listeners\LoginListener;
+use App\Listeners\UserEventSubscriber;
 use App\Listeners\QueryListener;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -23,15 +23,14 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],*/
 
-        // 测试事件和监听器
-        UserLoginEvent::class => [
-            LoginListener::class
-        ],
-
         // SQL 语句日志记录
         QueryExecuted::class => [
             QueryListener::class
         ]
+    ];
+
+    protected $subscribe = [
+        UserEventSubscriber::class
     ];
 
     /**

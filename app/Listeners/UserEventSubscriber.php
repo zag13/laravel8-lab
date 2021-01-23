@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
-class LoginListener
+class UserEventSubscriber
 {
     /**
      * Create the event listener.
@@ -21,12 +21,18 @@ class LoginListener
     }
 
     /**
-     * Handle the event.
-     *
-     * @param object $event
-     * @return void
+     *  为订阅者注册监听器
+     * @param $events
      */
-    public function handle(UserLoginEvent $event)
+    public function subscribe($events)
+    {
+        $events->listen(
+            UserLoginEvent::class,
+            UserEventSubscriber::class . '@onUserLogin'
+        );
+    }
+
+    public function onUserLogin(UserLoginEvent $event)
     {
         $user = $event->user;
         $context = [
