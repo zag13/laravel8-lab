@@ -51,5 +51,6 @@ Route::group([
     Route::get('collect', [TestController::class, 'collect']);
     Route::get('broadcast', [TestController::class, 'broadcast']);
     Route::get('relationships', [TestController::class, 'relationships']);
+    Route::get('database', [TestController::class, 'database']);
 });
 

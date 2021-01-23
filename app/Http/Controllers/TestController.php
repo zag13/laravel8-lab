@@ -18,6 +18,7 @@ use App\Services\Utils\Excel;
 use App\Services\Utils\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
@@ -234,20 +235,14 @@ class TestController extends Controller
 
             return $result;
         });
-        dd($data);
-        $data = [];
-        $data['aaa'] = collect($array)->sum('aaa');
-        $data['bbb'] = collect($array)->sum('bbb');
-        $data['ccc'] = collect($array)->sum('ccc');
-        dd($data);
+        var_dump($data);
     }
 
     public function broadcast()
     {
         $user = User::find(1);
         $message = 'hello,world!';
-        $groupId = 0;
-        event(new UserSendMessage($user, $message, $groupId));
+        event(new UserSendMessage($user, $message));
     }
 
     public function relationships()
@@ -295,5 +290,75 @@ class TestController extends Controller
 
 //        var_dump($user);
 //        var_dump(111);
+    }
+
+    public function database()
+    {
+        // 原生查询 (数据没有被过滤)
+        // select 始终返回 array，array 中的每个结果都是 php stdClass 对象
+//        $user = DB::select('select * from users where id = ?', [1]);
+
+//        DB::insert('insert into table_name () values (?, ?)', []);
+
+//        DB::update("update table_name set column_name = 'a' where column_name2 = ?", []);
+
+//        DB::delete("delete from table_name where id = ?", []);
+
+//        DB::unprepared("update table_name set column_name = 'a' where column_name2 = 'Dries'");
+
+        // 事务
+        /*DB::transaction(function () {
+            DB::update('update users set votes = 1');
+
+            DB::delete('delete from posts');
+        }, 3);
+        DB::beginTransaction();
+        DB::rollBack();
+        DB::commit();*/
+
+        // 有趣的查询构造
+        /*DB::table('users')->orderBy('id')->chunkById(2, function ($users) {
+            foreach ($users as $user) {
+                var_dump($user);
+            }
+        }, 'id');*/
+
+        /*$query = DB::table('users')->select('id');
+        $users = $query->addSelect('name')->get()->toArray();   // 推荐用法
+        $users = $query->selectRaw('name')->get()->toArray(); */
+
+        /*DB::table('users')->selectRaw('price * ? as price_with_tax', [1.0825])
+            ->whereRaw('price > IF(state = "TX", ?, 100)', [200])
+            ->groupBy('department')
+            ->havingRaw('SUM(price) > ?', [2500])
+            ->orderByRaw('updated_at - created_at DESC')
+            ->groupByRaw('city, state')
+            ->get();*/
+
+        /*$latestDownloadLogs = DB::table('download_log')
+            ->select(['file_name', 'creator_id']);
+        $users = DB::table('users')
+            ->leftJoinSub($latestDownloadLogs, 'd_log', function ($join) {
+                $join->on('users.id', '=', 'd_log.creator_id');
+            })->get();*/
+        //select * from `users` left join (select `file_name`, `creator_id` from `download_log`) as `d_log` on `users`.`id` = `d_log`.`creator_id`
+
+        /*$users = User::where(function ($query) {
+            $query->select('creator_id')
+                ->from('download_log', 'd_log')
+                ->whereColumn('d_log.creator_id', 'users.id')
+                ->orderByDesc('d_log.created_at')
+                ->limit(1);
+        }, '=', 1)->get();*/
+        //select * from `users` where (select `creator_id` from `download_log` as `d_log` where `d_log`.`creator_id` = `users`.`id` order by `d_log`.`created_at` desc limit 1) = '1'
+
+        /*$users = DB::table('users')
+            ->fromSub(DB::table('download_log')->select(['file_name', 'creator_id']), 'a')
+            ->when(1, function ($query) {
+                return $query->where('id', '=', 1);
+            })->dump();*/
+        //select * from (select `file_name`, `creator_id` from `download_log`) as `a` where `id` = ?
+
+        var_dump(111222333);
     }
 }
