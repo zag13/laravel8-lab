@@ -24,9 +24,22 @@ class ModDownloadLog extends Model
 
     /**
      * 测试一对一&&一对多关联（belongs）
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user()
     {
         return $this->belongsTo(User::class, 'creator_id', 'id');
+    }
+
+
+    /**
+     * 测试 scope 方法
+     * @param $query
+     * @param $id
+     * @return mixed
+     */
+    public function scopeCreator($query, $id)
+    {
+        return $query->where('creator_id', '=', $id);
     }
 }

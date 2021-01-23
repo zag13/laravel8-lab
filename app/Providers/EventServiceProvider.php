@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Events\UserLoginEvent;
 use App\Listeners\UserEventSubscriber;
 use App\Listeners\QueryListener;
 use Illuminate\Auth\Events\Registered;
@@ -40,6 +39,6 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        //User::observe(UserObserver::class);
     }
 }

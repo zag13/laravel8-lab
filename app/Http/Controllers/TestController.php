@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
+use PhpParser\Node\Expr\AssignOp\Mod;
 
 class TestController extends Controller
 {
@@ -358,6 +359,24 @@ class TestController extends Controller
                 return $query->where('id', '=', 1);
             })->dump();*/
         //select * from (select `file_name`, `creator_id` from `download_log`) as `a` where `id` = ?
+
+        var_dump(111222333);
+    }
+
+    public function orm()
+    {
+        // collection chunk cursor
+
+        // 动态查询作用域
+//        $dLog = ModDownloadLog::creator('1')->first();
+
+        // 批量不能触发事件
+//        User::where('id', '=', 1)->update(['name' => 'zs666']);
+
+        // 单条可以触发
+        /*$user = User::where('id', '=', 1)->first();
+        $user->name = 'zs6667';
+        $user->update();*/
 
         var_dump(111222333);
     }

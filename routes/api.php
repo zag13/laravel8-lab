@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
     return $request->user();
 });*/
 
+
 Route::group([
     'prefix' => 'auth'
 ], function () {
@@ -28,6 +29,7 @@ Route::group([
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('me', [AuthController::class, 'me']);
 });
+
 
 Route::group([
     'middleware' => 'jwt.auth',
@@ -42,15 +44,14 @@ Route::group([
     'prefix' => 'test'
 ], function () {
     Route::get('user', [TestController::class, 'user']);
-
     Route::post('fileReader', [TestController::class, 'fileReader']);
     Route::get('fileExport', [TestController::class, 'fileExport']);
-    Route::get('tree', [TestController::class, 'tree']);
     Route::get('queue', [TestController::class, 'queue']);
     Route::get('download', [TestController::class, 'download']);
     Route::get('collect', [TestController::class, 'collect']);
     Route::get('broadcast', [TestController::class, 'broadcast']);
     Route::get('relationships', [TestController::class, 'relationships']);
     Route::get('database', [TestController::class, 'database']);
+    Route::get('orm', [TestController::class, 'orm']);
 });
 
