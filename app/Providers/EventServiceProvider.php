@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Events\LoginEvent;
+use App\Events\UserLoginEvent;
 use App\Listeners\LoginListener;
 use App\Listeners\QueryListener;
 use Illuminate\Auth\Events\Registered;
@@ -24,7 +24,7 @@ class EventServiceProvider extends ServiceProvider
         ],*/
 
         // 测试事件和监听器
-        LoginEvent::class => [
+        UserLoginEvent::class => [
             LoginListener::class
         ],
 

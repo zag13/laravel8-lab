@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\LoginEvent;
+use App\Events\UserLoginEvent;
 use App\Services\Utils\ZLog;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -26,7 +26,7 @@ class LoginListener
      * @param object $event
      * @return void
      */
-    public function handle(LoginEvent $event)
+    public function handle(UserLoginEvent $event)
     {
         $user = $event->user;
         $context = [
