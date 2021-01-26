@@ -221,6 +221,7 @@ class TestController extends Controller
             'a' => ['title' => 'a', 'aaa' => 1, 'bbb' => 2, 'ccc' => 3],
             'b' => ['title' => 'b', 'aaa' => 1, 'bbb' => 2, 'ccc' => 3],
             'c' => ['title' => 'c', 'aaa' => 1, 'bbb' => 2, 'ccc' => 3],
+            'd' => ['title' => 'a', 'aaa' => 1, 'bbb' => 2, 'ccc' => 3],
         ];
         $data = collect($array)->reduce(function ($result, $item) {
             if ($result == null) {
@@ -236,7 +237,19 @@ class TestController extends Controller
 
             return $result;
         });
-        var_dump($data);
+
+        $data2 = collect($array)->groupBy('title')
+            ->map(function ($value, $groupBy) {
+                return [
+                    'title' => $groupBy,
+                    'aaa' => $value->sum('aaa'),
+                    'bbb' => $value->sum('bbb'),
+                    'ccc' => $value->sum('ccc'),
+                ];
+            })
+            ->toArray();
+
+        var_dump($data, $data2);
     }
 
     public function broadcast()
