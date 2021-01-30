@@ -18,5 +18,10 @@ use Illuminate\Database\Eloquent\Model as CModel;
  */
 class Model extends CModel
 {
-
+    // 一种校验数据的思想
+    public function scopeCheckPermission($query, $params)
+    {
+        // 权限校验
+        return $query->whereIn();
+    }
 }

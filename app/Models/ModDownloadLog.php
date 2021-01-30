@@ -31,7 +31,6 @@ class ModDownloadLog extends Model
         return $this->belongsTo(User::class, 'creator_id', 'id');
     }
 
-
     /**
      * 测试 scope 方法
      * @param $query
