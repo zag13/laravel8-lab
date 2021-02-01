@@ -22,6 +22,10 @@ class ModDownloadLog extends Model
         'creator_id', 'creator_name', 'status'
     ];
 
+    protected $casts = [
+        'creator_id' => 'int'
+    ];
+
     /**
      * 测试一对一&&一对多关联（belongs）
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
