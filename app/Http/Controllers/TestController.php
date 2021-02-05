@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Events\UserSendMessage;
 use App\Http\Controllers\Core\Controller;
 use App\Models\ModDownloadLog;
+use App\Models\ModTestES;
 use App\Models\User;
 use App\Services\Utils\Excel;
 use App\Services\Utils\File;
@@ -453,5 +454,10 @@ class TestController extends Controller
         //$client->cluster();
 
         dd($response);
+    }
+
+    public function faker()
+    {
+        ModTestES::factory(90)->create();
     }
 }
