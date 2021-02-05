@@ -53,5 +53,6 @@ Route::group([
     Route::get('relationships', [TestController::class, 'relationships']);
     Route::get('database', [TestController::class, 'database']);
     Route::get('orm', [TestController::class, 'orm']);
+    Route::get('elasticsearch', [TestController::class, 'elasticsearch']);
 });
 

@@ -16,9 +16,12 @@ use App\Models\ModDownloadLog;
 use App\Models\User;
 use App\Services\Utils\Excel;
 use App\Services\Utils\File;
+use Elasticsearch\ClientBuilder;
+use GuzzleHttp\Ring\Client\MockHandler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
@@ -392,5 +395,63 @@ class TestController extends Controller
         $user->update();*/
 
         var_dump(111222333);
+    }
+
+    public function elasticsearch()
+    {
+        $client = ClientBuilder::create()
+            ->setHosts(config('database.connections.elasticsearch.hosts'))
+            ->build();
+
+        $params = [
+            'index' => 'my_index',
+            'type' => 'my_type',
+            'id' => 'my_id',
+            'body' => ['testField' => 'abc']
+        ];
+
+        $response = $client->index($params);
+
+        $params = [
+            'index' => 'my_index',
+            'type' => 'my_type',
+            'id' => 'my_id'
+        ];
+
+        //$response = $client->get($params);
+
+        $params = [
+            'index' => 'my_index',
+            'type' => 'my_type',
+            'body' => [
+                'query' => [
+                    'match' => [
+                        'testField' => 'abc'
+                    ]
+                ]
+            ]
+        ];
+
+        //$response = $client->search($params);
+
+        $params = [
+            'index' => 'my_index',
+            'type' => 'my_type',
+            'id' => 'my_id'
+        ];
+
+        //$response = $client->delete($params);
+
+//        $deleteParams = [
+//            'index' => 'my_index'
+//        ];
+//        $response = $client->indices()->delete($deleteParams);
+
+        // 索引相关
+        //$client->indices();
+        // 集群相关
+        //$client->cluster();
+
+        dd($response);
     }
 }
