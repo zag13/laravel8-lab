@@ -2,17 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\ModTestArticles;
+use App\Models\ModTestES;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class TestArticlesFactory extends Factory
+class ModTestESFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = ModTestArticles::class;
+    protected $model = ModTestES::class;
 
     /**
      * Define the model's default state.
