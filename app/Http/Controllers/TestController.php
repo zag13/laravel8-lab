@@ -460,4 +460,14 @@ class TestController extends Controller
     {
         ModTestES::factory(90)->create();
     }
+
+    public function search()
+    {
+        //$data = ModTestES::search('110')->raw();
+        //$data = ModTestES::search('110')->get();
+        $data = ModTestES::search('Prof. Friedrich Leuschke DVM')
+            ->within('download_log')  //  比较奇怪
+            ->paginate()->toArray();
+        dd($data);
+    }
 }

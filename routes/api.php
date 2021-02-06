@@ -55,5 +55,6 @@ Route::group([
     Route::get('orm', [TestController::class, 'orm']);
     Route::get('elasticsearch', [TestController::class, 'elasticsearch']);
     Route::get('faker', [TestController::class, 'faker']);
+    Route::get('search', [TestController::class, 'search']);
 });
 
