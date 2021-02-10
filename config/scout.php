@@ -116,4 +116,7 @@ return [
         'secret' => env('ALGOLIA_SECRET', ''),
     ],
 
+    'elasticsearch' => [
+        'hosts' => explode(',', env('ES_HOSTS', 'http://127.0.0.1:9200'))
+    ]
 ];
