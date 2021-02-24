@@ -15,8 +15,8 @@ class UserSendMessage implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-//    public $connection = 'redis';
-//    public $queue = 'broadcast-message';
+    public $connection = 'redis';
+    public $queue = 'broadcast-message';
 
     public $user, $message, $groupId;
 
@@ -40,15 +40,14 @@ class UserSendMessage implements ShouldBroadcast
     public function broadcastOn()
     {
         if ($this->groupId == 0) {
-            return new Channel('my-channel');
-//            return ['my-channel'];
+            return new Channel('public');
         }
         return new PrivateChannel('wechat.group.' . $this->groupId);
     }
 
     public function broadcastAs()
     {
-        return 'my-event';
+        return 'user.message';
     }
 
     public function broadcastWith()
