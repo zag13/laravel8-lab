@@ -19,7 +19,6 @@
         "laravel/tinker": "^2.5",
         "phpoffice/phpspreadsheet": "^1.15",
         "spatie/laravel-permission": "^3.18",
-        "tamayo/laravel-scout-elastic": "^8.0",
         "tymon/jwt-auth": "^1.0"
     },
     "require-dev": {
