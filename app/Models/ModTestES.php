@@ -2,16 +2,83 @@
 
 namespace App\Models;
 
+use App\Services\Es\EsTestEs;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Laravel\Scout\Searchable;
-use Laravel\Scout\Builder;
+use ScoutElastic\Searchable;
 
 class ModTestES extends Model
 {
-    use HasFactory,Searchable;
+    use HasFactory, Searchable;
 
-    public $table = "test_es";
+    protected $table = "test_es";
+
+    protected $indexConfigurator = EsTestEs::class;
+
+    protected $searchRules = [
+
+    ];
+
+    // Here you can specify a mapping for model fields
+    protected $mapping = [
+        'properties' => [
+            'name' => [
+                'type' => 'keyword',
+                // Also you can configure multi-fields, more details you can find here https://www.elastic.co/guide/en/elasticsearch/reference/current/multi-fields.html
+                'fields' => [
+                    'raw' => [
+                        'type' => 'keyword',
+                    ]
+                ]
+            ],
+            'email' => [
+                'type' => 'keyword',
+                'fields' => [
+                    'raw' => [
+                        'type' => 'keyword',
+                    ]
+                ]
+            ],
+            'company' => [
+                'type' => 'text',
+                'analyzer' => 'ik_smart',
+                'search_analyzer' => 'ik_smart',
+                'fields' => [
+                    'raw' => [
+                        'type' => 'text',
+                    ]
+                ]
+            ],
+            'address' => [
+                'type' => 'text',
+                'analyzer' => 'ik_smart',
+                'search_analyzer' => 'ik_smart',
+                'fields' => [
+                    'raw' => [
+                        'type' => 'text',
+                    ]
+                ]
+            ],
+            'country' => [
+                'type' => 'keyword',
+                'fields' => [
+                    'raw' => [
+                        'type' => 'keyword',
+                    ]
+                ]
+            ],
+            'text' => [
+                'type' => 'text',
+                'analyzer' => 'ik_smart',
+                'search_analyzer' => 'ik_smart',
+                'fields' => [
+                    'raw' => [
+                        'type' => 'keyword',
+                    ]
+                ]
+            ],
+        ]
+    ];
 
     /**
      * Get the indexable data array for the model.
@@ -21,9 +88,6 @@ class ModTestES extends Model
     public function toSearchableArray()
     {
         $array = $this->toArray();
-
-        // Customize the data array...
-        unset($array['sentence']);
 
         return $array;
     }

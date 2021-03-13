@@ -15,6 +15,7 @@ use App\Http\Controllers\Core\Controller;
 use App\Models\ModDownloadLog;
 use App\Models\ModTestES;
 use App\Models\User;
+use App\Services\Es\MySearchRule;
 use App\Services\Utils\Excel;
 use App\Services\Utils\File;
 use Elasticsearch\ClientBuilder;
@@ -461,13 +462,15 @@ class TestController extends Controller
         ModTestES::factory(90)->create();
     }
 
-    public function search()
+    public function search(Request $request)
     {
-        //$data = ModTestES::search('110')->raw();
-        //$data = ModTestES::search('110')->get();
-        $data = ModTestES::search('Prof. Friedrich Leuschke DVM')
-            ->within('download_log')  //  比较奇怪
-            ->paginate()->toArray();
-        dd($data);
+        $q = $request->get('q');
+        $paginator = [];
+        if ($q) $paginator = ModTestES::search($q)
+            ->rule(MySearchRule::class)
+            ->paginate(5);
+
+//        dd($paginator);
+        return view('search', compact('paginator', 'q'));
     }
 }

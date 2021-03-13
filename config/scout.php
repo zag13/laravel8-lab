@@ -117,6 +117,7 @@ return [
     ],
 
     'elasticsearch' => [
-        'hosts' => explode(',', env('ES_HOSTS', 'http://127.0.0.1:9200'))
+        'hosts' => explode(',', env('ES_HOSTS', 'http://127.0.0.1:9200')),
+        'index' => env('ELASTICSEARCH_INDEX', 'laravel'),
     ]
 ];
