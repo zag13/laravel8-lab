@@ -25,11 +25,9 @@ class Controller extends BaseController
     {
         $errors = Validator::make($request->all(), $rules, $messages, $customAttributes)->errors()->first();
 
-        if (empty($errors)) {
-            return true;
-        } else {
-            throw new \Exception($errors);
-        }
+        if (empty($errors)) return true;
+
+        throw new \Exception($errors);
     }
 
     /**

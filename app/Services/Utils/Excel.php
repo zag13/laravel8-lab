@@ -33,10 +33,15 @@ class Excel
     {
         if (!in_array($downloadType, config('appointment.download'))) return false;
 
-        if ($downloadType == 1) {
-            return self::export2Local($header, $data, $fileName, $fileType);
-        } elseif ($downloadType == 2) {
-            self::export2Browser($header, $data, $fileName, $fileType);
+        switch ($downloadType) {
+            case 1:  // 异步下载至服务器
+                return self::export2Local($header, $data, $fileName, $fileType);
+            case 2:  // 输出到浏览器
+                self::export2Browser($header, $data, $fileName, $fileType);
+                break;
+            default:
+                self::export2Browser($header, $data, $fileName, $fileType);
+                break;
         }
     }
 

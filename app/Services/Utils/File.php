@@ -21,7 +21,7 @@ class File
      * @param string $tmp
      * @return string
      */
-    public static function storageFromUrl($url = '', $tmp = ''): string
+    public static function storageByUrl($url = '', $tmp = ''): string
     {
         if (empty($url) || empty($tmp)) throw new \Exception('未传入 url 或 tmp');
 

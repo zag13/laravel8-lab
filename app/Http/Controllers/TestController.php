@@ -63,7 +63,7 @@ class TestController extends Controller
         }
 
         $tmp = 'uploads/excel/' . uniqid() . '.' . $fileType;
-        $filePath = File::storageFromUrl($fileUrl, $tmp);
+        $filePath = File::storageByUrl($fileUrl, $tmp);
 
         $spreadsheet = $reader->load($filePath);
         $worksheet = $spreadsheet->getActiveSheet();
