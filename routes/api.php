@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\System\AuthController;
+use App\Http\Controllers\RedisController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\System\PermissionController;
 use Illuminate\Support\Facades\Route;
@@ -58,3 +59,26 @@ Route::group([
     Route::get('search', [TestController::class, 'search']);
 });
 
+Route::group([
+    'prefix' => 'redis'
+], function () {
+    Route::get('string', [RedisController::class, 'string']);
+    Route::get('set', [RedisController::class, 'set']);
+    Route::get('list', [RedisController::class, 'list']);
+    Route::get('sortedSet', [RedisController::class, 'sortedSet']);
+    Route::get('hash', [RedisController::class, 'hash']);
+    Route::get('hyperLogLog', [RedisController::class, 'hyperLogLog']);
+    Route::get('geo', [RedisController::class, 'geo']);
+    Route::get('bit', [RedisController::class, 'bit']);
+    Route::get('database', [RedisController::class, 'database']);
+    Route::get('expire', [RedisController::class, 'expire']);
+    Route::get('transaction', [RedisController::class, 'transaction']);
+    Route::get('lua', [RedisController::class, 'lua']);
+    Route::get('persistence', [RedisController::class, 'persistence']);
+    Route::get('pubsub', [RedisController::class, 'pubsub']);
+    Route::get('replication', [RedisController::class, 'replication']);
+    Route::get('cliAndSer', [RedisController::class, 'cliAndSer']);
+    Route::get('config', [RedisController::class, 'config']);
+    Route::get('debug', [RedisController::class, 'debug']);
+    Route::get('internalCommand', [RedisController::class, 'internalCommand']);
+});
