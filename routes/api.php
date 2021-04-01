@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\System\AuthController;
+use App\Http\Controllers\MongoController;
 use App\Http\Controllers\RedisController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\System\PermissionController;
@@ -81,4 +82,11 @@ Route::group([
     Route::get('config', [RedisController::class, 'config']);
     Route::get('debug', [RedisController::class, 'debug']);
     Route::get('internalCommand', [RedisController::class, 'internalCommand']);
+});
+
+
+Route::group([
+    'prefix' => 'mongo'
+], function () {
+   Route::get('find', [MongoController::class, 'find']);
 });

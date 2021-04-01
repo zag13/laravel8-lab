@@ -91,6 +91,21 @@ return [
             'prefix_indexes' => true,
         ],
 
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'host' => env('MONGO_HOST', 'localhost'),
+            'port' => env('MONGO_PORT', 27017),
+            'database' => env('MONGO_DATABASE', 'database'),
+            'username' => env('MONGO_USERNAME', ''),
+            'password' => env('MONGO_PASSWORD', ''),
+            'options' => [
+                // here you can pass more settings to the MongoModel Driver Manager
+                // see https://www.php.net/manual/en/mongodb-driver-manager.construct.php under "Uri Options" for a list of complete parameters that you can use
+
+                'database' => env('MONGO_AUTHENTICATION_DATABASE', 'admin'), // required with MongoModel 3+
+            ]
+        ],
+
         'elasticsearch' => [
             // Elasticsearch 支持多台服务器负载均衡，因此这里是一个数组
             'hosts' => explode(',', env('ES_HOSTS'))
@@ -127,7 +142,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
         ],
 
         'default' => [
