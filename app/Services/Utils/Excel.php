@@ -11,7 +11,7 @@ namespace App\Services\Utils;
 
 
 use App\Jobs\ExcelDownload;
-use App\Models\ModDownloadLog;
+use App\Models\DownloadLogModel;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -118,7 +118,7 @@ class Excel
                 'creator_id' => $user['id'],
                 'creator_name' => $user['name']
             ];
-            $downloadLog = ModDownloadLog::create($data);
+            $downloadLog = DownloadLogModel::create($data);
             ExcelDownload::dispatch($downloadLog)->onQueue('ExcelDownload')
                 ->delay(Carbon::now()->addSeconds(3));
         } catch (\Throwable $throwable) {

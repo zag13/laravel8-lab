@@ -11,16 +11,25 @@ namespace App\Http\Controllers;
 
 
 use App\Http\Controllers\Core\Controller;
-use App\Models\Mongo\MongoTestMongo;
+use App\Models\Mongo\PostsMongo;
+use Illuminate\Support\Facades\DB;
 
 class MongoController extends Controller
 {
+    protected $postsMongoRepo;
+
     public function find()
     {
-        $data = MongoTestMongo::all()->toArray();
+        //$data = TestMMongo::all()->toArray();
 
-        $data2 = MongoTestMongo::where('site', '=', 'github.com')->get()->toArray();
+        //$data = TestMMongo::where('site', '=', 'github.com')->delete();
 
-        dd($data, $data2);
+        //$data = MongoModel::collection('posts')->get()->toArray();
+
+        //$data = DB::connection('mongodb')->collection('posts')->get()->toArray();
+
+        $data = PostsMongo::find('606472999aa48f142404c0b6', ['*']);
+
+        dd($data);
     }
 }

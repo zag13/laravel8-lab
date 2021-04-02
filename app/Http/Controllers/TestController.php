@@ -12,8 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Events\UserSendMessage;
 use App\Http\Controllers\Core\Controller;
-use App\Models\ModDownloadLog;
-use App\Models\ModTestES;
+use App\Models\DownloadLogModel;
+use App\Models\TestESModel;
 use App\Models\User;
 use App\Services\Es\MySearchRule;
 use App\Services\Utils\Excel;
@@ -212,7 +212,7 @@ class TestController extends Controller
         $id = $request->input('id');
 
         $user = Auth::user();
-        $downloadLog = ModDownloadLog::where('id', '=', $id)->firstOrFail();
+        $downloadLog = DownloadLogModel::where('id', '=', $id)->firstOrFail();
         if ($downloadLog['creator_id'] != $user['id']) throw new \Exception('你无权下载该数据');
 
         $fileFullName = $downloadLog['file_name'] . '.' . strtolower($downloadLog['file_type']);
@@ -277,7 +277,7 @@ class TestController extends Controller
         select * from `download_log` where `download_log` . `creator_id` = '1' and `download_log` . `creator_id` is not null limit 1*/
 
         // 一对一 (belongs)
-//        $downloadLog = ModDownloadLog::select(['id', 'file_name', 'creator_id'])->find(2)->user;
+//        $downloadLog = DownloadLogModel::select(['id', 'file_name', 'creator_id'])->find(2)->user;
         /*select `id`, `file_name`, `creator_id` from `download_log` where `download_log`.`id` = '1' limit 1
         select * from `users` where `users`.`id` = '1' limit 1 */
 
@@ -391,7 +391,7 @@ class TestController extends Controller
         // collection chunk cursor
 
         // 动态查询作用域
-//        $dLog = ModDownloadLog::creator('1')->first();
+//        $dLog = DownloadLogModel::creator('1')->first();
 
         // 批量不能触发事件
 //        User::where('id', '=', 1)->update(['name' => 'zs666']);
@@ -464,14 +464,14 @@ class TestController extends Controller
 
     public function faker()
     {
-        ModTestES::factory(90)->create();
+        TestESModel::factory(90)->create();
     }
 
     public function search(Request $request)
     {
         $q = $request->get('q');
         $paginator = [];
-        if ($q) $paginator = ModTestES::search($q)
+        if ($q) $paginator = TestESModel::search($q)
             ->rule(MySearchRule::class)
             ->paginate(5);
 

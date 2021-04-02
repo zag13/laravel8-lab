@@ -13,11 +13,11 @@ namespace App\Models\Mongo;
 use App\Models\Core\MongoModel;
 use Jenssegers\Mongodb\Eloquent\SoftDeletes;
 
-class MongoTestMongo extends MongoModel
+class TestMMongo extends MongoModel
 {
     use SoftDeletes;
 
-    protected $collection = 'test_mongo';
+    protected $collection = 'test_m';
 
     protected $dates = ['deleted_at'];
 }

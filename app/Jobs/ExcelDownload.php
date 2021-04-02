@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\ModDownloadLog;
+use App\Models\DownloadLogModel;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -22,7 +22,7 @@ class ExcelDownload implements ShouldQueue
      * Create a new job instance.
      * @return void
      */
-    public function __construct(ModDownloadLog $downloadLog)
+    public function __construct(DownloadLogModel $downloadLog)
     {
         $this->downloadLog = $downloadLog;
     }

@@ -72,7 +72,7 @@ class User extends Authenticatable implements JWTSubject
      */
     public function downloadLog()
     {
-        return $this->hasOne(ModDownloadLog::class, 'creator_id', 'id');
+        return $this->hasOne(DownloadLogModel::class, 'creator_id', 'id');
     }
 
     /**
@@ -80,6 +80,6 @@ class User extends Authenticatable implements JWTSubject
      */
     public function downloadLogs()
     {
-        return $this->hasMany(ModDownloadLog::class, 'creator_id', 'id');
+        return $this->hasMany(DownloadLogModel::class, 'creator_id', 'id');
     }
 }

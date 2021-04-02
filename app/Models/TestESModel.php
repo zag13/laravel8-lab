@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use ScoutElastic\Searchable;
 
-class ModTestES extends Model
+class TestESModel extends Model
 {
     use HasFactory, Searchable;
 

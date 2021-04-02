@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Models\Core\Model;
 
-class ModDownloadLog extends Model
+class DownloadLogModel extends Model
 {
     public $table = "download_log";
 
