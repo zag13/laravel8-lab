@@ -11,16 +11,22 @@ namespace App\Http\Controllers;
 
 
 use App\Http\Controllers\Core\Controller;
-use App\Models\Mongo\PostsMongo;
-use Illuminate\Support\Facades\DB;
+use App\Models\DownloadLogModel;
+use App\Models\Mongos\PostsMongo;
+use App\Repos\PostsMongoRepo;
 
 class MongoController extends Controller
 {
     protected $postsMongoRepo;
 
+    public function __construct(PostsMongoRepo $postsMongoRepo)
+    {
+        $this->postsMongoRepo = $postsMongoRepo;
+    }
+
     public function find()
     {
-        //$data = TestMMongo::all()->toArray();
+        $data = PostsMongo::orWhere('rank', 'desc')->get()->toArray();
 
         //$data = TestMMongo::where('site', '=', 'github.com')->delete();
 
@@ -28,8 +34,28 @@ class MongoController extends Controller
 
         //$data = DB::connection('mongodb')->collection('posts')->get()->toArray();
 
-        $data = PostsMongo::find('606472999aa48f142404c0b6', ['*']);
+        //$data = PostsMongo::where('_id', '=', '606474e89aa48f142404c0bb')->increment('views')->save();
 
-        dd($data);
+        $data = DownloadLogModel::where('id', '=', 1)->increment('file_siz');
+
+        dump($data);
     }
+
+    // 浏览文章
+    public function show($id)
+    {
+        $post = $this->postsMongoRepo->getById($id);
+        if (is_null($post)) return $this->respFail('没有查询到对应文章');
+        $views = $this->postsMongoRepo->addViews($post);
+        return "Show Post #{$post->id}, Views: {$views}";
+    }
+
+    // 获取热门文章排行榜
+    public function popular()
+    {
+        $posts = $this->postsMongoRepo->trending();
+
+        if ($posts) dump($posts->toArray());
+    }
+
 }

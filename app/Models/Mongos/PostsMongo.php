@@ -2,22 +2,22 @@
 /**
  * Created by PhpStorm
  * User: ZS
- * Date: 2021/3/31
- * Time: 6:14 下午
+ * Date: 2021/4/1
+ * Time: 6:15 下午
  */
 
 
-namespace App\Models\Mongo;
+namespace App\Models\Mongos;
 
 
 use App\Models\Core\MongoModel;
 use Jenssegers\Mongodb\Eloquent\SoftDeletes;
 
-class TestMMongo extends MongoModel
+class PostsMongo extends MongoModel
 {
     use SoftDeletes;
 
-    protected $collection = 'test_m';
+    protected $collection = 'posts';
 
     protected $dates = ['deleted_at'];
 }

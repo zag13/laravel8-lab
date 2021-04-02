@@ -89,4 +89,7 @@ Route::group([
     'prefix' => 'mongo'
 ], function () {
    Route::get('find', [MongoController::class, 'find']);
+   // 感觉这种用法不怎么好 1、不满足会继续向下寻找至结束 2、感觉上面的会把下面的路由覆盖
+   Route::get('show/{id}', [MongoController::class, 'show'])->where('id', '[A-Za-z0-9]+');
+   Route::get('popular', [MongoController::class, 'popular']);
 });
