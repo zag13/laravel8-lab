@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\User;
+use App\Models\UserModel;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -25,7 +25,7 @@ class UserSendMessage implements ShouldBroadcast
      *
      * @return void
      */
-    public function __construct(User $user, $message, $groupId = 0)
+    public function __construct(UserModel $user, $message, $groupId = 0)
     {
         $this->user = $user;
         $this->message = $message;

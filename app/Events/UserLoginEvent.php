@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\User;
+use App\Models\UserModel;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -22,7 +22,7 @@ class UserLoginEvent
      *
      * @return void
      */
-    public function __construct(User $user)
+    public function __construct(UserModel $user)
     {
         $this->user = $user;
     }

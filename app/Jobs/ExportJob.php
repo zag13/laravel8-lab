@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\DownloadLogModel;
-use App\Models\User;
+use App\Models\UserModel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Auth;
 class ExportJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public $tries = 3;
+
+    public $queue = 'ExportJob';
 
     protected $downloadLog;
 
@@ -37,7 +41,7 @@ class ExportJob implements ShouldQueue
         $actionName = $this->downloadLog['action_name'];
         $params = (new Request())->merge(json_decode($this->downloadLog['params'], true));
 
-        $user = User::find($this->downloadLog['creator_id']);
+        $user = UserModel::find($this->downloadLog['creator_id']);
         $user && Auth::login($user, true);
 
         $res = (new $className)->$actionName($params);

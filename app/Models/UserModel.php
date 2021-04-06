@@ -13,7 +13,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  *
  * @mixin \Eloquent
  */
-class User extends Authenticatable implements JWTSubject
+class UserModel extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable, HasRoles;
 

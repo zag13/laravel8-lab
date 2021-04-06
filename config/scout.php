@@ -87,7 +87,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Identify User
+    | Identify UserModel
     |--------------------------------------------------------------------------
     |
     | This option allows you to control whether to notify the search engine

@@ -11,8 +11,6 @@ namespace App\Http\Controllers;
 
 
 use App\Http\Controllers\Core\Controller;
-use App\Models\DownloadLogModel;
-use App\Models\Mongos\PostsMongo;
 use App\Repos\PostsMongoRepo;
 
 class MongoController extends Controller
@@ -26,7 +24,7 @@ class MongoController extends Controller
 
     public function find()
     {
-        $data = PostsMongo::orWhere('rank', 'desc')->get()->toArray();
+        //$data = PostsMongo::orWhere('rank', 'desc')->get()->toArray();
 
         //$data = TestMMongo::where('site', '=', 'github.com')->delete();
 
@@ -36,9 +34,9 @@ class MongoController extends Controller
 
         //$data = PostsMongo::where('_id', '=', '606474e89aa48f142404c0bb')->increment('views')->save();
 
-        $data = DownloadLogModel::where('id', '=', 1)->increment('file_siz');
+        //$data = DownloadLogModel::where('id', '=', 1)->increment('file_siz');
 
-        dump($data);
+        //dump($data);
     }
 
     // 浏览文章
