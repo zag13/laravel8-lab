@@ -13,7 +13,7 @@ namespace App\Http\Controllers;
 use App\Events\UserSendMessage;
 use App\Http\Controllers\Core\Controller;
 use App\Models\DownloadLogModel;
-use App\Models\TestESModel;
+use App\Models\TestEsModel;
 use App\Models\UserModel;
 use App\Services\Es\MySearchRule;
 use App\Services\Utils\Excel;
@@ -460,14 +460,14 @@ class TestController extends Controller
 
     public function faker()
     {
-        TestESModel::factory(90)->create();
+        TestEsModel::factory(90)->create();
     }
 
     public function search(Request $request)
     {
         $q = $request->get('q');
         $paginator = [];
-        if ($q) $paginator = TestESModel::search($q)
+        if ($q) $paginator = TestEsModel::search($q)
             ->rule(MySearchRule::class)
             ->paginate(5);
 
