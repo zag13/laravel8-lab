@@ -116,7 +116,8 @@ class Excel
                 'action_name' => $backtrace[1]['function'],
                 'params' => json_encode($params),
                 'creator_id' => $user['id'],
-                'creator_name' => $user['name']
+                'creator_name' => $user['name'],
+                'status' => 0
             ];
             $downloadLog = DownloadLogModel::create($data);
             ExportJob::dispatch($downloadLog)->onQueue('ExportJob')
