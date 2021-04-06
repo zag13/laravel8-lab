@@ -14,21 +14,17 @@ use App\Events\UserSendMessage;
 use App\Http\Controllers\Core\Controller;
 use App\Models\DownloadLogModel;
 use App\Models\TestESModel;
-use App\Models\User;
+use App\Models\UserModel;
 use App\Services\Es\MySearchRule;
 use App\Services\Utils\Excel;
 use App\Services\Utils\File;
 use Elasticsearch\ClientBuilder;
-use GuzzleHttp\Ring\Client\MockHandler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
-use PhpParser\Node\Expr\AssignOp\Mod;
 
 class TestController extends Controller
 {
@@ -40,7 +36,7 @@ class TestController extends Controller
 
         $params = request()->all();
 
-        $data = User::where('id', '=', $params['id'])->first()->toArray();
+        $data = UserModel::where('id', '=', $params['id'])->first()->toArray();
 
         return response()->json($data);
     }
@@ -264,7 +260,7 @@ class TestController extends Controller
 
     public function broadcast()
     {
-        $user = User::find(1);
+        $user = UserModel::find(1);
         $message = 'hello,world!';
         event(new UserSendMessage($user, $message));
     }
@@ -272,7 +268,7 @@ class TestController extends Controller
     public function relationships()
     {
         // 一对一$user
-//        $user = User::select(['id', 'name'])->find(2)->downloadLog;
+//        $user = UserModel::select(['id', 'name'])->find(2)->downloadLog;
         /*select `id`, `name` from `users` where `users` . `id` = '1' limit 1
         select * from `download_log` where `download_log` . `creator_id` = '1' and `download_log` . `creator_id` is not null limit 1*/
 
@@ -282,7 +278,7 @@ class TestController extends Controller
         select * from `users` where `users`.`id` = '1' limit 1 */
 
         // 一对多
-//        $user = User::select(['id', 'name'])->find(1)->downloadLogs;
+//        $user = UserModel::select(['id', 'name'])->find(1)->downloadLogs;
 //        foreach ($downloadLogs as $downloadLog) {
 //            echo $downloadLog->file_name;
 //        }
@@ -290,22 +286,22 @@ class TestController extends Controller
         select * from `download_log` where `download_log`.`creator_id` = '1' and `download_log`.`creator_id` is not null*/
 
         // 一对多 (关联查询)
-//        $user = User::select(['id', 'name'])->find(1)->downloadLogs()->select('file_name')->where('id', '=', 2)->get();
+//        $user = UserModel::select(['id', 'name'])->find(1)->downloadLogs()->select('file_name')->where('id', '=', 2)->get();
         /*select `id`, `name` from `users` where `users`.`id` = '1' limit 1
         select `file_name` from `download_log` where `download_log`.`creator_id` = '1' and `download_log`.`creator_id` is not null and `id` = '2'*/
 
         // 一对多 (belongs) 和一对一基本一样
 
         // 渴求式加载
-//        $user = User::with('downloadLogs')->get();
+//        $user = UserModel::with('downloadLogs')->get();
         /*select * from `users`
         select * from `download_log` where `download_log`.`creator_id` in (1, 2)*/
 
-//        $user = User::with('downloadLogs:file_name,file_type,creator_id')->get()->toArray();
+//        $user = UserModel::with('downloadLogs:file_name,file_type,creator_id')->get()->toArray();
         /*select * from `users`
         select `file_name`, `file_type`, `creator_id` from `download_log` where `download_log`.`creator_id` in (1, 2)*/
 
-//        $user = User::with(['downloadLogs' => function ($query) {
+//        $user = UserModel::with(['downloadLogs' => function ($query) {
 //            // limit 不应该在渴求式条件约束中使用（限制条数的话，会优先满足上面的用户，可能与预期结果不符合）
 //            $query->select(['file_name', 'creator_id'])->limit(1);
 //        }])->limit(1)->get()->toArray();
@@ -367,7 +363,7 @@ class TestController extends Controller
             })->get();*/
         //select * from `users` left join (select `file_name`, `creator_id` from `download_log`) as `d_log` on `users`.`id` = `d_log`.`creator_id`
 
-        /*$users = User::where(function ($query) {
+        /*$users = UserModel::where(function ($query) {
             $query->select('creator_id')
                 ->from('download_log', 'd_log')
                 ->whereColumn('d_log.creator_id', 'users.id')
@@ -394,10 +390,10 @@ class TestController extends Controller
 //        $dLog = DownloadLogModel::creator('1')->first();
 
         // 批量不能触发事件
-//        User::where('id', '=', 1)->update(['name' => 'zs666']);
+//        UserModel::where('id', '=', 1)->update(['name' => 'zs666']);
 
         // 单条可以触发
-        /*$user = User::where('id', '=', 1)->first();
+        /*$user = UserModel::where('id', '=', 1)->first();
         $user->name = 'zs6667';
         $user->update();*/
 
