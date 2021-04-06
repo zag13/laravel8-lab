@@ -10,7 +10,7 @@
 namespace App\Services\Utils;
 
 
-use App\Jobs\ExcelDownload;
+use App\Jobs\ExportJob;
 use App\Models\DownloadLogModel;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -119,7 +119,7 @@ class Excel
                 'creator_name' => $user['name']
             ];
             $downloadLog = DownloadLogModel::create($data);
-            ExcelDownload::dispatch($downloadLog)->onQueue('ExcelDownload')
+            ExportJob::dispatch($downloadLog)->onQueue('ExportJob')
                 ->delay(Carbon::now()->addSeconds(3));
         } catch (\Throwable $throwable) {
             throw new \Exception('加入下载列表失败：' . $throwable->getMessage());
