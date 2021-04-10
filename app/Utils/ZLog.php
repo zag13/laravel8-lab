@@ -7,7 +7,7 @@
  */
 
 
-namespace App\Services\Utils;
+namespace App\Utils;
 
 
 use Monolog\Formatter\LineFormatter;

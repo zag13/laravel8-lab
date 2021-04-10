@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Es;
+namespace App\Utils\Es;
 
 use ScoutElastic\SearchRule;
 

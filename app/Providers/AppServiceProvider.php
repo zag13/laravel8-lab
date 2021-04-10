@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Services\Utils\ZLog;
+use App\Utils\ZLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 

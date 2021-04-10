@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Services\Es\EsTestEs;
+use App\Utils\Es\EsTestEs;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use ScoutElastic\Searchable;

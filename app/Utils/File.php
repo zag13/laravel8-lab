@@ -7,7 +7,7 @@
  */
 
 
-namespace App\Services\Utils;
+namespace App\Utils;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;

@@ -10,7 +10,7 @@
 namespace App\Listeners;
 
 
-use App\Services\Utils\ZLog;
+use App\Utils\ZLog;
 use Illuminate\Database\Events\QueryExecuted;
 
 class QueryListener

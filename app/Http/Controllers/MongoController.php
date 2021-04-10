@@ -11,13 +11,13 @@ namespace App\Http\Controllers;
 
 
 use App\Http\Controllers\Core\Controller;
-use App\Repos\PostsMongoRepo;
+use App\Repositories\PostsMongoRepository;
 
 class MongoController extends Controller
 {
     protected $postsMongoRepo;
 
-    public function __construct(PostsMongoRepo $postsMongoRepo)
+    public function __construct(PostsMongoRepository $postsMongoRepo)
     {
         $this->postsMongoRepo = $postsMongoRepo;
     }

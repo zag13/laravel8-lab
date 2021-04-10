@@ -7,14 +7,14 @@
  */
 
 
-namespace App\Repos;
+namespace App\Repositories;
 
 
 use App\Models\Mongos\PostsMongo;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
 
-class PostsMongoRepo
+class PostsMongoRepository
 {
     protected $posts;
 
