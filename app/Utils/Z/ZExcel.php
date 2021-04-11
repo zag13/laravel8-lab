@@ -7,7 +7,7 @@
  */
 
 
-namespace App\Utils;
+namespace App\Utils\Z;
 
 
 use App\Jobs\ExportJob;
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
-class Excel
+class ZExcel
 {
     /**
      * 通用导出

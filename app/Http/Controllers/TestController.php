@@ -16,8 +16,8 @@ use App\Models\DownloadLogModel;
 use App\Models\TestEsModel;
 use App\Models\UserModel;
 use App\Utils\Es\MySearchRule;
-use App\Utils\Excel;
-use App\Utils\File;
+use App\Utils\Z\ZExcel;
+use App\Utils\Z\ZFile;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,7 +59,7 @@ class TestController extends Controller
         }
 
         $tmp = 'uploads/excel/' . uniqid() . '.' . $fileType;
-        $filePath = File::storageByUrl($fileUrl, $tmp);
+        $filePath = ZFile::storageByUrl($fileUrl, $tmp);
 
         $spreadsheet = $reader->load($filePath);
         $worksheet = $spreadsheet->getActiveSheet();
@@ -134,7 +134,7 @@ class TestController extends Controller
             ]
         ];
 
-        Excel::export($header, $data, 'aaa');
+        ZExcel::export($header, $data, 'aaa');
     }
 
     public function queue(Request $request)
@@ -145,7 +145,7 @@ class TestController extends Controller
 
         $params = $request->all();
 
-        $result = Excel::add2Queue($params);
+        $result = ZExcel::add2Queue($params);
         if (!empty($result)) return $result;
 
         $header = [
@@ -193,7 +193,7 @@ class TestController extends Controller
             ]
         ];
 
-        $result = Excel::export($header, $data, '测试文件', 'Csv', $params['download']);
+        $result = ZExcel::export($header, $data, '测试文件', 'Csv', $params['download']);
         if (!empty($result)) return $result;
 
         return $this->respSuccess($data, '正常查看信息');

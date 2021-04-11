@@ -7,13 +7,13 @@
  */
 
 
-namespace App\Utils;
+namespace App\Utils\Z;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Storage;
 
-class File
+class ZFile
 {
     /**
      * 存储网络资源到本地
