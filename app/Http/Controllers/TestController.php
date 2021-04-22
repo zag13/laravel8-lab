@@ -43,19 +43,23 @@ class TestController extends Controller
 
     public function fileReader()
     {
-        $fileUrl = "https://kyyx-dept1-store-test.oss-cn-hangzhou.aliyuncs.com/source/20201221/e761e7a20402d5a515964d20a016d930.xlsx";
+        $fileUrl = "...";
 
         $fileFullName = array_reverse(explode('/', $fileUrl))[0];
         $fileType = array_reverse(explode('.', $fileFullName))[0];
 
-        if (strtoupper($fileType) == 'XLSX') {
-            $reader = new Xlsx();
-        } elseif (strtoupper($fileType) == 'XLS') {
-            $reader = new Xls();
-        } elseif (strtoupper($fileType) == 'CSV') {
-            $reader = new Csv();
-        } else {
-            $this->respFail('文件格式错误');
+        switch (strtoupper($fileType)) {
+            case 'XLSX':
+                $reader = new Xlsx();
+                break;
+            case 'XLS':
+                $reader = new Xls();
+                break;
+            case 'CSV':
+                $reader = new Csv();
+                break;
+            default:
+                return $this->respFail('文件格式错误');
         }
 
         $tmp = 'uploads/excel/' . uniqid() . '.' . $fileType;
@@ -66,18 +70,18 @@ class TestController extends Controller
         $highestRow = $worksheet->getHighestRow();      // 最大行数（可以分批处理）
 
         if ($highestRow - 1 <= 0) {
-            $this->respFail('Excel表格中没有数据');
+            return $this->respFail('Excel表格中没有数据');
         }
         $data = [];
         for ($row = 2; $row <= $highestRow; $row++) {
             // 将 excel 数据存储到 数组 中
             $data[] = [
-                'date' => $worksheet->getCellByColumnAndRow(1, $row)->getFormattedValue(),
-                'id' => $worksheet->getCellByColumnAndRow(3, $row)->getFormattedValue(),
-                '消耗' => $worksheet->getCellByColumnAndRow(4, $row)->getFormattedValue(),
-                '曝光数' => $worksheet->getCellByColumnAndRow(5, $row)->getFormattedValue(),
-                '点击数' => $worksheet->getCellByColumnAndRow(6, $row)->getFormattedValue(),
-                '渠道号' => $worksheet->getCellByColumnAndRow(7, $row)->getFormattedValue(),
+                '' => $worksheet->getCellByColumnAndRow(1, $row)->getFormattedValue(),
+                '' => $worksheet->getCellByColumnAndRow(3, $row)->getFormattedValue(),
+                '' => $worksheet->getCellByColumnAndRow(4, $row)->getFormattedValue(),
+                '' => $worksheet->getCellByColumnAndRow(5, $row)->getFormattedValue(),
+                '' => $worksheet->getCellByColumnAndRow(6, $row)->getFormattedValue(),
+                '' => $worksheet->getCellByColumnAndRow(7, $row)->getFormattedValue(),
             ];
         }
 

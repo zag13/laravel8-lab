@@ -17,6 +17,8 @@ class UserModel extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable, HasRoles;
 
+    protected $table = "users";
+
     /**
      * The attributes that are mass assignable.
      *
