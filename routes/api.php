@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\System\AuthController;
-use App\Http\Controllers\MongoController;
-use App\Http\Controllers\RedisController;
-use App\Http\Controllers\TestController;
+use App\Http\Controllers\Test\MongoController;
+use App\Http\Controllers\Test\RedisController;
+use App\Http\Controllers\Test\TestController;
 use App\Http\Controllers\System\PermissionController;
 use Illuminate\Support\Facades\Route;
 

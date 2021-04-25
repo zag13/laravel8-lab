@@ -7,7 +7,7 @@
  */
 
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Test;
 
 
 use App\Events\UserSendMessage;
