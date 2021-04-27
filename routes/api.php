@@ -3,6 +3,7 @@
 use App\Http\Controllers\System\AuthController;
 use App\Http\Controllers\Test\MongoController;
 use App\Http\Controllers\Test\RedisController;
+use App\Http\Controllers\Test\SqlController;
 use App\Http\Controllers\Test\TestController;
 use App\Http\Controllers\System\PermissionController;
 use Illuminate\Support\Facades\Route;
@@ -52,13 +53,27 @@ Route::group([
     Route::get('download', [TestController::class, 'download']);
     Route::get('collect', [TestController::class, 'collect']);
     Route::get('broadcast', [TestController::class, 'broadcast']);
-    Route::get('relationships', [TestController::class, 'relationships']);
-    Route::get('database', [TestController::class, 'database']);
-    Route::get('orm', [TestController::class, 'orm']);
     Route::get('elasticsearch', [TestController::class, 'elasticsearch']);
     Route::get('faker', [TestController::class, 'faker']);
     Route::get('search', [TestController::class, 'search']);
 });
+
+
+Route::group([
+    'prefix' => 'sql'
+], function () {
+    Route::get('database', [SqlController::class, 'database']);
+    Route::get('orm', [SqlController::class, 'orm']);
+    Route::get('relationships', [SqlController::class, 'relationships']);
+
+    // TODO 没法依赖注入
+    Route::get('{uri}', function ($uri) {
+        $controller = new SqlController();
+        if (!method_exists($controller, $uri)) throw new Exception('not found');
+        return (new SqlController())->$uri();
+    });
+});
+
 
 Route::group([
     'prefix' => 'redis'
@@ -88,8 +103,8 @@ Route::group([
 Route::group([
     'prefix' => 'mongo'
 ], function () {
-   Route::get('find', [MongoController::class, 'find']);
-   // 感觉这种用法不怎么好 1、不满足会继续向下寻找至结束 2、感觉上面的会把下面的路由覆盖
-   Route::get('show/{id}', [MongoController::class, 'show'])->where('id', '[A-Za-z0-9]+');
-   Route::get('popular', [MongoController::class, 'popular']);
+    Route::get('find', [MongoController::class, 'find']);
+    // 感觉这种用法不怎么好 1、不满足会继续向下寻找至结束 2、感觉上面的会把下面的路由覆盖
+    Route::get('show/{id}', [MongoController::class, 'show'])->where('id', '[A-Za-z0-9]+');
+    Route::get('popular', [MongoController::class, 'popular']);
 });
