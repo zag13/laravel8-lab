@@ -28,7 +28,7 @@ class MongoController extends Controller
 
         //$data = TestMMongo::where('site', '=', 'github.com')->delete();
 
-        //$data = MongoModel::collection('posts')->get()->toArray();
+        //$data = Mongo::collection('posts')->get()->toArray();
 
         //$data = DB::connection('mongodb')->collection('posts')->get()->toArray();
 

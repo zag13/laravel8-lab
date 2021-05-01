@@ -10,10 +10,10 @@
 namespace App\Models\Mongos;
 
 
-use App\Models\Core\MongoModel;
+use App\Models\Core\Mongo;
 use Jenssegers\Mongodb\Eloquent\SoftDeletes;
 
-class PostsMongo extends MongoModel
+class PostsMongo extends Mongo
 {
     use SoftDeletes;
 

@@ -39,7 +39,7 @@ if (!function_exists('list2tree')) {
      * @param string $pk
      * @param string $pid
      * @param string $child
-     * @param int    $root
+     * @param int $root
      * @return array
      */
     function list2tree($list, $pk = 'id', $pid = 'pid', $child = 'children', $root = 0): array
@@ -121,7 +121,6 @@ if (!function_exists('getSubtree')) {
 }
 
 if (!function_exists('formatBytes')) {
-
     /**
      * 将 byte 转为 B,KB,MB,GB,TB
      * @param int $size
