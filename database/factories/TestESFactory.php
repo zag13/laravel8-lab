@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Models\TestEsModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ModTestESFactory extends Factory
+class TestESFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.

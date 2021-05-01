@@ -11,7 +11,7 @@ namespace App\Models\Core;
 
 use Jenssegers\Mongodb\Eloquent\Model;
 
-class MongoModel extends Model
+class Mongo extends Model
 {
     protected $connection = 'mongodb';
 }

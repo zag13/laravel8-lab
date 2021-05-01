@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Core\Model;
 use App\Utils\Es\EsTestEs;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use ScoutElastic\Searchable;
 
 class TestEsModel extends Model
