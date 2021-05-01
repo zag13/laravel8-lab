@@ -22,8 +22,69 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 class ZExcel
 {
     /**
+     * 通过 url 读取 excel 内容
+     * @param $fileUrl
+     * @return array
+     */
+    public static function readExcelByUrl($fileUrl)
+    {
+        if (empty($fileUrl)) trigger_error('url 不能为空');
+
+        $fileFullName = array_reverse(explode('/', $fileUrl))[0];
+        $fileType = array_reverse(explode('.', $fileFullName))[0];
+
+        $tmp = 'uploads/excel/temp/' . uniqid() . '.' . $fileType;
+        $filePath = ZFile::storageByUrl($fileUrl, $tmp);
+
+        $data = self::readExcelByPath($filePath);
+
+        unlink($filePath);
+
+        return $data;
+    }
+
+    /**
+     * 通过 本地路径 读取 excel 内容
+     * @param $filePath
+     * @return array
+     */
+    public static function readExcelByPath($filePath)
+    {
+        $filePath = storage_path('app/') . $filePath;
+        if (!is_file($filePath)) trigger_error('文件不存在');
+
+        $fileFullName = array_reverse(explode('/', $filePath))[0];
+        $fileType = array_reverse(explode('.', $fileFullName))[0];
+
+        $reader = IOFactory::createReader(ucfirst(strtolower($fileType)));
+        $reader->setReadDataOnly(TRUE);
+        $spreadsheet = $reader->load($filePath);
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        // Get the highest row number and column letter referenced in the worksheet
+        $highestRow = $worksheet->getHighestRow();
+        $highestColumn = $worksheet->getHighestColumn();
+        // Increment the highest column letter
+        $highestColumn++;
+
+        if ($highestRow == 0) trigger_error('Excel表格中没有数据');
+
+        $data = [];
+
+        for ($row = 1; $row <= $highestRow; ++$row) {
+            for ($col = 'A'; $col != $highestColumn; ++$col) {
+                $data[($row - 1)][] = $worksheet->getCell($col . $row)->getValue();
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * 添加到导出队列（限制为1000条）
      * @param $params
+     * @return false|\Illuminate\Http\JsonResponse
+     * @throws \Throwable
      */
     public static function add2Queue($params)
     {
@@ -32,10 +93,11 @@ class ZExcel
         DB::beginTransaction();
         try {
             $user = Auth::user();
+
             if (isset($params['limit'])) $params['limit'] = 1000;
             if (isset($params['offset'])) $params['offset'] = 0;
-
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
             $data = [
                 'class_name' => $backtrace[1]['class'],
                 'action_name' => $backtrace[1]['function'],
@@ -44,6 +106,7 @@ class ZExcel
                 'creator_name' => $user['name'],
                 'status' => 0
             ];
+
             $downloadLog = DownloadLogModel::create($data);
             ExportJob::dispatch($downloadLog);
         } catch (\Throwable $throwable) {
@@ -76,9 +139,9 @@ class ZExcel
         $extra = [
             'exportType' => $extra['exportType'] ?? 1,
             'fileName' => $extra['fileName'] ?? '默认文件名',
-            'fileType' => $extra['fileType'] ?? 'Csv',
-            'downloadLogId' => $extra['downloadLogId'] ?? 0
+            'fileType' => $extra['fileType'] ?? 'Csv'
         ];
+
         $exportType = array_reduce(config('appointment.exportType'), 'array_merge', []);
         if (!in_array($extra['exportType'], $exportType)) return false;
 
@@ -93,8 +156,11 @@ class ZExcel
                 return self::export2Local($header, $data, $extra);
             // 大数据导出至服务器
             case 3:
+                $extra['downloadLogId'] = $extra['downloadLogId'] ?? 0;
                 return self::bigDataExport2Local($header, $data, $extra);
         }
+
+        return true;
     }
 
     /**
@@ -160,7 +226,8 @@ class ZExcel
      * @param $header
      * @param $data
      * @param array $extra
-     * @return \Illuminate\Http\JsonResponse
+     * @return bool|\Illuminate\Http\JsonResponse
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
     private static function bigDataExport2Local($header, $data, $extra = [])
     {

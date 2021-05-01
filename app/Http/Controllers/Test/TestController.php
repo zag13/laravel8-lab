@@ -17,14 +17,10 @@ use App\Models\TestEsModel;
 use App\Models\UserModel;
 use App\Utils\Es\MySearchRule;
 use App\Utils\Z\ZExcel;
-use App\Utils\Z\ZFile;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use PhpOffice\PhpSpreadsheet\Reader\Csv;
-use PhpOffice\PhpSpreadsheet\Reader\Xls;
-use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 
 class TestController extends Controller
 {
@@ -41,54 +37,10 @@ class TestController extends Controller
         return response()->json($data);
     }
 
-    public function fileReader()
+    public function readExcel()
     {
-        $fileUrl = "...";
-
-        $fileFullName = array_reverse(explode('/', $fileUrl))[0];
-        $fileType = array_reverse(explode('.', $fileFullName))[0];
-
-        switch (strtoupper($fileType)) {
-            case 'XLSX':
-                $reader = new Xlsx();
-                break;
-            case 'XLS':
-                $reader = new Xls();
-                break;
-            case 'CSV':
-                $reader = new Csv();
-                break;
-            default:
-                return $this->respFail('文件格式错误');
-        }
-
-        $tmp = 'uploads/excel/' . uniqid() . '.' . $fileType;
-        $filePath = ZFile::storageByUrl($fileUrl, $tmp);
-
-        $spreadsheet = $reader->load($filePath);
-        $worksheet = $spreadsheet->getActiveSheet();
-        $highestRow = $worksheet->getHighestRow();      // 最大行数（可以分批处理）
-
-        if ($highestRow - 1 <= 0) {
-            return $this->respFail('Excel表格中没有数据');
-        }
-        $data = [];
-        for ($row = 2; $row <= $highestRow; $row++) {
-            // 将 excel 数据存储到 数组 中
-            $data[] = [
-                '' => $worksheet->getCellByColumnAndRow(1, $row)->getFormattedValue(),
-                '' => $worksheet->getCellByColumnAndRow(3, $row)->getFormattedValue(),
-                '' => $worksheet->getCellByColumnAndRow(4, $row)->getFormattedValue(),
-                '' => $worksheet->getCellByColumnAndRow(5, $row)->getFormattedValue(),
-                '' => $worksheet->getCellByColumnAndRow(6, $row)->getFormattedValue(),
-                '' => $worksheet->getCellByColumnAndRow(7, $row)->getFormattedValue(),
-            ];
-        }
-
-        rrmDir(dirname($filePath));
-
-        // 处理数据
-        var_dump($data);
+        $aaa = ZExcel::readExcelByPath('download/excel/2021-05-01/608cf76c3cd43.csv');
+        print_r($aaa);
     }
 
     public function fileExport()
@@ -138,7 +90,45 @@ class TestController extends Controller
             ]
         ];
 
-        ZExcel::export($header, $data, 'aaa');
+        ZExcel::export($header, $data);
+    }
+
+    public function bigDataExport(Request $request)
+    {
+        $this->validate($request, [
+            'exportType' => 'integer|in:0,3'
+        ]);
+
+        $params = $request->all();
+        ZExcel::add2Queue($params);
+
+        $export = $params['exportType'] ?? 0;
+
+        $i = 0;
+        $data = TestEsModel::select(['id', 'name', 'phone', 'email', 'country', 'address', 'company'])
+            ->where('id', '<', '30')
+            ->when($export == 0, function ($query) {
+
+                return $query->offset(0)->limit(1)->get()->toArray();
+
+            }, function ($query) use (&$i) {
+
+                return $query->chunkById(10, function ($data) use (&$i) {
+                    $header = ['id' => 'ID', 'name' => '姓名', 'phone' => '电话', 'email' => '邮箱', 'country' => '国家',
+                        'address' => '地址', 'company' => '公司'];
+
+                    $data = $data->toArray();
+
+                    $extra = ['i' => $i, 'nums' => 10];
+
+                    ZExcel::export($header, $data, $extra);
+
+                    $i++;
+                }, 'id');
+
+            });
+
+        print_r($data);
     }
 
     public function queue(Request $request)
@@ -197,7 +187,7 @@ class TestController extends Controller
             ]
         ];
 
-        $result = ZExcel::export($header, $data, '测试文件', 'Csv', $params['download']);
+        $result = ZExcel::export($header, $data);
         if (!empty($result)) return $result;
 
         return $this->respSuccess($data, '正常查看信息');

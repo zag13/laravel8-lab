@@ -47,8 +47,9 @@ Route::group([
     'prefix' => 'test'
 ], function () {
     Route::get('user', [TestController::class, 'user']);
-    Route::post('fileReader', [TestController::class, 'fileReader']);
+    Route::get('readExcel', [TestController::class, 'readExcel']);
     Route::get('fileExport', [TestController::class, 'fileExport']);
+    Route::get('bigDataExport', [TestController::class, 'bigDataExport']);
     Route::get('queue', [TestController::class, 'queue']);
     Route::get('download', [TestController::class, 'download']);
     Route::get('collect', [TestController::class, 'collect']);
@@ -66,7 +67,13 @@ Route::group([
     Route::get('orm', [SqlController::class, 'orm']);
     Route::get('relationships', [SqlController::class, 'relationships']);
 
-    // TODO 没法依赖注入
+    /*
+     * TODO 没法依赖注入
+     * 1、获取传递的参数
+     * 2、通过反射获取 method 中的依赖
+     * 3、依赖注入 && 参数绑定
+     * 4、实例化
+     */
     Route::get('{uri}', function ($uri) {
         $controller = new SqlController();
         if (!method_exists($controller, $uri)) throw new Exception('not found');
