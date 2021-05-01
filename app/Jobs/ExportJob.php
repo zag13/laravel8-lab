@@ -18,8 +18,6 @@ class ExportJob implements ShouldQueue
 
     public $tries = 3;
 
-    public $queue = 'ExportJob';
-
     protected $downloadLog;
 
     /**
@@ -29,6 +27,7 @@ class ExportJob implements ShouldQueue
     public function __construct(DownloadLogModel $downloadLog)
     {
         $this->downloadLog = $downloadLog;
+        $this->queue = 'ExportJob';
     }
 
     /**
@@ -39,10 +38,13 @@ class ExportJob implements ShouldQueue
     {
         $className = $this->downloadLog['class_name'];
         $actionName = $this->downloadLog['action_name'];
-        $params = (new Request())->merge(json_decode($this->downloadLog['params'], true));
+
+        $params = json_decode($this->downloadLog['params'], true);
+        $params['downloadLogId'] = $this->downloadLog['id'];        // 大数据导出要使用
+        $params = (new Request())->merge($params);
 
         $user = UserModel::find($this->downloadLog['creator_id']);
-        $user && Auth::login($user, true);
+        $user && Auth::login($user);
 
         $res = (new $className)->$actionName($params);
 
