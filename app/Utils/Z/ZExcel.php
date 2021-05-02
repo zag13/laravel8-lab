@@ -136,28 +136,33 @@ class ZExcel
      */
     public static function export($header, $data, $extra = [])
     {
-        $extra = [
-            'exportType' => $extra['exportType'] ?? 1,
+        // 重新格式化参数
+        $params = [
+            'exportType' => $extra['exportType'] ?? 1,      // ‼️
             'fileName' => $extra['fileName'] ?? '默认文件名',
             'fileType' => $extra['fileType'] ?? 'Csv'
         ];
 
         $exportType = array_reduce(config('appointment.exportType'), 'array_merge', []);
-        if (!in_array($extra['exportType'], $exportType)) return false;
+        if (!in_array($params['exportType'], $exportType)) trigger_error('导出类型不合法');
 
-        switch ($extra['exportType']) {
+        switch ($params['exportType']) {
             // 导出至浏览器
             case 1:
             default:
-                self::export2Browser($header, $data, $extra);
+                self::export2Browser($header, $data, $params);
                 break;
             // 导出至服务器
             case 2:
-                return self::export2Local($header, $data, $extra);
+                return self::export2Local($header, $data, $params);
             // 大数据导出至服务器
             case 3:
-                $extra['downloadLogId'] = $extra['downloadLogId'] ?? 0;
-                return self::bigDataExport2Local($header, $data, $extra);
+                $params = array_merge($params, [
+                    'downloadLogId' => $extra['downloadLogId'] ?? 0,
+                    'i' => $extra['i'] ?? 0,
+                    'nums' => $extra['nums'] ?? 300
+                ]);
+                return self::bigDataExport2Local($header, $data, $params);
         }
 
         return true;
@@ -181,8 +186,8 @@ class ZExcel
         self::setHeader($fileName, $fileType);
 
         $writer->save('php://output');
-        $spreadsheet->disconnectWorksheets();
 
+        $spreadsheet->disconnectWorksheets();
         unset($spreadsheet, $writer);
     }
 
@@ -235,13 +240,17 @@ class ZExcel
 
         $fileType = $extra['fileType'] ?? 'Csv';
 
-        $extra['i'] = $extra['i'] ?? 0;
-        $extra['nums'] = $extra['nums'] ?? 300;
+        $params['i'] = $extra['i'] ?? 0;
+        $params['nums'] = $extra['nums'] ?? 300;
 
-        $spreadsheet = self::bigDataExportBasic($header, $data, $extra);
+        $spreadsheet = self::bigDataExportBasic($header, $data, $params);
 
         // 判断是否为最后一次
-        if (count($data) == $extra['nums']) return true;
+        if (count($data) == $params['nums']) return true;
+
+        // 很奇葩，没有这个的时候  总是异常
+        // PhpOffice\PhpSpreadsheet\Exception: Your requested sheet index: 0 is out of bounds. The actual number of sheets is 0. in /var/www/laravel8-lab/vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Spreadsheet.php:688
+        usleep(1000);
 
         $writer = IOFactory::createWriter($spreadsheet, $fileType);
 
@@ -269,10 +278,9 @@ class ZExcel
                 'status' => 1
             ]);
 
-        return response()->json([
-            'code' => 10000,
-            'msg' => '加入下载列表成功'
-        ]);
+        // 由于 chunkById 不能自定义返回，只能出此下策。 淦，队列认为执行失败！！！
+        // throw new \Exception('加入下载列表成功', 10000);
+        return true;
     }
 
     /**
@@ -355,7 +363,7 @@ class ZExcel
     {
         $type = ['Xlsx', 'Xls', 'Csv'];
 
-        if (!in_array($fileType, $type)) trigger_error('未知文件类型', E_USER_ERROR);
+        if (!in_array($fileType, $type)) trigger_error('未知文件类型');
 
         switch ($fileType) {
             case 'Csv':

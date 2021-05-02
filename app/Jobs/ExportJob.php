@@ -16,7 +16,7 @@ class ExportJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $tries = 3;
+    public $tries = 1;
 
     protected $downloadLog;
 
@@ -47,6 +47,9 @@ class ExportJob implements ShouldQueue
         $user && Auth::login($user);
 
         $res = (new $className)->$actionName($params);
+
+        // 大数据导出时是没有返回 excel 文件数据的
+        if ($res == true) return;
 
         $data = [
             'file_name' => $res['fileName'],

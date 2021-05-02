@@ -100,35 +100,37 @@ class TestController extends Controller
         ]);
 
         $params = $request->all();
-        ZExcel::add2Queue($params);
 
-        $export = $params['exportType'] ?? 0;
+        $result = ZExcel::add2Queue($params);
+        if (!empty($result)) return $result;
 
         $i = 0;
         $data = TestEsModel::select(['id', 'name', 'phone', 'email', 'country', 'address', 'company'])
             ->where('id', '<', '30')
-            ->when($export == 0, function ($query) {
-
-                return $query->offset(0)->limit(1)->get()->toArray();
-
-            }, function ($query) use (&$i) {
-
-                return $query->chunkById(10, function ($data) use (&$i) {
-                    $header = ['id' => 'ID', 'name' => '姓名', 'phone' => '电话', 'email' => '邮箱', 'country' => '国家',
-                        'address' => '地址', 'company' => '公司'];
-
+            ->when($params['exportType'] == 3, function ($query) use (&$i, $params) {
+                return $query->chunkById(10, function ($data) use (&$i, $params) {
                     $data = $data->toArray();
 
-                    $extra = ['i' => $i, 'nums' => 10];
+                    $extra = [
+                        'i' => $i,
+                        'nums' => 10,
+                        'exportType' => $params['exportType'],
+                        'downloadLogId' => $params['downloadLogId'] ?? 23
+                    ];
 
+                    $header = ['id' => 'ID', 'name' => '姓名', 'phone' => '电话', 'email' => '邮箱',
+                        'country' => '国家', 'address' => '地址', 'company' => '公司'];
                     ZExcel::export($header, $data, $extra);
 
                     $i++;
                 }, 'id');
-
+            }, function ($query) {
+                return $query->offset(0)->limit(1)->get()->toArray();
             });
 
-        print_r($data);
+        if ($params['exportType'] == 3) return true;
+
+        return $this->respSuccess($data);
     }
 
     public function queue(Request $request)
@@ -188,7 +190,7 @@ class TestController extends Controller
         ];
 
         $result = ZExcel::export($header, $data);
-        if (!empty($result)) return $result;
+        if (!$result) return $result;
 
         return $this->respSuccess($data, '正常查看信息');
     }
