@@ -162,7 +162,11 @@ class ZExcel
                     'i' => $extra['i'] ?? 0,
                     'nums' => $extra['nums'] ?? 300
                 ]);
-                return self::bigDataExport2Local($header, $data, $params);
+                return self::bigData($header, $data, $params);
+            // 另一种大数据导出的思想
+            case 4:
+                $params = array_merge($params, []);
+                return self::bigData2($header, $data, $params);
         }
 
         return true;
@@ -234,7 +238,7 @@ class ZExcel
      * @return bool|\Illuminate\Http\JsonResponse
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    private static function bigDataExport2Local($header, $data, $extra = [])
+    private static function bigData($header, $data, $extra = [])
     {
         if (empty($extra['downloadLogId'])) trigger_error('downloadLogId 不能为空');
 
@@ -243,7 +247,7 @@ class ZExcel
         $params['i'] = $extra['i'] ?? 0;
         $params['nums'] = $extra['nums'] ?? 300;
 
-        $spreadsheet = self::bigDataExportBasic($header, $data, $params);
+        $spreadsheet = self::bigDataBasic($header, $data, $params);
 
         // 判断是否为最后一次
         if (count($data) == $params['nums']) return true;
@@ -281,6 +285,12 @@ class ZExcel
         // 由于 chunkById 不能自定义返回，只能出此下策。 淦，队列认为执行失败！！！
         // throw new \Exception('加入下载列表成功', 10000);
         return true;
+    }
+
+    // 另一种大数据导出的思想
+    private static function bigData2($header, $data, $extra = [])
+    {
+
     }
 
     /**
@@ -322,7 +332,7 @@ class ZExcel
      * @param $extra
      * @return Spreadsheet
      */
-    private static function bigDataExportBasic($header, $data, $extra)
+    private static function bigDataBasic($header, $data, $extra)
     {
         $i = $extra['i'] ?? 0;
         $nums = $extra['nums'] ?? 300;

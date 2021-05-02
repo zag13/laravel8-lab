@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\System\AuthController;
+use App\Http\Controllers\Test\ESController;
+use App\Http\Controllers\Test\ExcelController;
 use App\Http\Controllers\Test\MongoController;
 use App\Http\Controllers\Test\RedisController;
 use App\Http\Controllers\Test\SqlController;
@@ -24,6 +26,7 @@ use Illuminate\Support\Facades\Route;
 });*/
 
 
+// 'prefix' => 'auth'
 Route::group([
     'prefix' => 'auth'
 ], function () {
@@ -34,6 +37,7 @@ Route::group([
 });
 
 
+// 'prefix' => 'permission'
 Route::group([
     'middleware' => 'jwt.auth',
     'prefix' => 'permission'
@@ -42,24 +46,31 @@ Route::group([
 });
 
 
+// 'prefix' => 'test'
 Route::group([
 //    'middleware' => 'jwt.auth',
     'prefix' => 'test'
 ], function () {
     Route::get('user', [TestController::class, 'user']);
-    Route::get('readExcel', [TestController::class, 'readExcel']);
-    Route::get('fileExport', [TestController::class, 'fileExport']);
-    Route::get('bigDataExport', [TestController::class, 'bigDataExport']);
-    Route::get('queue', [TestController::class, 'queue']);
-    Route::get('download', [TestController::class, 'download']);
     Route::get('collect', [TestController::class, 'collect']);
     Route::get('broadcast', [TestController::class, 'broadcast']);
-    Route::get('elasticsearch', [TestController::class, 'elasticsearch']);
-    Route::get('faker', [TestController::class, 'faker']);
-    Route::get('search', [TestController::class, 'search']);
 });
 
 
+// 'prefix' => 'excel'
+Route::group([
+    'prefix' => 'excel'
+], function () {
+    Route::get('readExcel', [ExcelController::class, 'readExcel']);
+    Route::get('export2Browser', [ExcelController::class, 'export2Browser']);
+    Route::get('export2Local', [ExcelController::class, 'export2Local']);
+    Route::get('bigDataExport', [ExcelController::class, 'bigDataExport']);
+    Route::get('bigDataExport2', [ExcelController::class, 'bigDataExport2']);
+    Route::get('download', [ExcelController::class, 'download']);
+});
+
+
+// 'prefix' => 'sql'
 Route::group([
     'prefix' => 'sql'
 ], function () {
@@ -82,6 +93,7 @@ Route::group([
 });
 
 
+// 'prefix' => 'redis'
 Route::group([
     'prefix' => 'redis'
 ], function () {
@@ -107,6 +119,7 @@ Route::group([
 });
 
 
+// 'prefix' => 'mongo'
 Route::group([
     'prefix' => 'mongo'
 ], function () {
@@ -114,4 +127,14 @@ Route::group([
     // 感觉这种用法不怎么好 1、不满足会继续向下寻找至结束 2、感觉上面的会把下面的路由覆盖
     Route::get('show/{id}', [MongoController::class, 'show'])->where('id', '[A-Za-z0-9]+');
     Route::get('popular', [MongoController::class, 'popular']);
+});
+
+
+// 'prefix' => 'es'
+Route::group([
+    'prefix' => 'es'
+], function () {
+    Route::get('elasticsearch', [ESController::class, 'elasticsearch']);
+    Route::get('search', [ESController::class, 'search']);
+    Route::get('faker', [ESController::class, 'faker']);
 });
