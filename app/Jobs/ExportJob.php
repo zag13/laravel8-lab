@@ -50,14 +50,20 @@ class ExportJob implements ShouldQueue
                 $this->export2local($className, $actionName, $params);
                 break;
             case 3:
-                $this->bigDataExport($className, $actionName, $params);
+                $this->singleton($className, $actionName, $params);
                 break;
             case 4:
-                $this->bigDataExport2($className, $actionName, $params);
+                $this->singleton2($className, $actionName, $params);
                 break;
         }
     }
 
+    /**
+     * 异步导出 限制1000条
+     * @param $className
+     * @param $actionName
+     * @param $params
+     */
     private function export2local($className, $actionName, $params)
     {
         $params['offset'] = 0;
@@ -77,7 +83,15 @@ class ExportJob implements ShouldQueue
         $this->downloadLog->update($data);
     }
 
-    private function bigDataExport($className, $actionName, $params)
+    /**
+     * 单例模式 + chunkById
+     * 优点：减轻了参数校验
+     * 缺点：代码侵入大
+     * @param $className
+     * @param $actionName
+     * @param $params
+     */
+    private function singleton($className, $actionName, $params)
     {
         $params['downloadLogId'] = $this->downloadLog['id'];
 
@@ -85,10 +99,17 @@ class ExportJob implements ShouldQueue
         (new $className)->$actionName($params);
     }
 
-    private function bigDataExport2($className, $actionName, $params)
+    /**
+     * 单例模式 + total
+     * 优点：代码侵入小
+     * 缺点：参数校验会更多
+     * @param $className
+     * @param $actionName
+     * @param $params
+     * @throws \Exception
+     */
+    private function singleton2($className, $actionName, $params)
     {
-        if (empty($params['total'])) throw new \Exception('导出数据为空');
-
         $params['downloadLogId'] = $this->downloadLog['id'];
 
         $defaultLimit = $params['defaultLimit'] ?? 300;
@@ -97,10 +118,11 @@ class ExportJob implements ShouldQueue
         for ($i = 0; $i < $times; $i++) {
             $params['offset'] = $i * $defaultLimit;
             $params['limit'] = $defaultLimit;
+            $params['isLast'] = $i == ($times - 1);
 
             $params = (new Request())->merge($params);
             (new $className)->$actionName($params);
         }
-
     }
+
 }

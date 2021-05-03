@@ -88,7 +88,8 @@ class ZExcel
      */
     public static function add2Queue($params)
     {
-        if (php_sapi_name() == 'cli' || !in_array($params['exportType'], config('appointment.exportType.local'))) return;
+        $exportType = $params['exportType'] ?? null;
+        if (php_sapi_name() == 'cli' || !in_array($exportType, config('appointment.exportType.local'))) return;
 
         DB::beginTransaction();
         try {
@@ -126,12 +127,11 @@ class ZExcel
      * 通用导出
      * @param        $header
      * @param        $data
-     * @param        $fileName
-     * @param string $fileType
-     * @param int $downloadType
-     * @return array|false
+     * @param array $extra
+     * @return array|bool|void
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public static function export($header, $data, $extra = [])
+    public static function export($header, $data, array $extra = [])
     {
         // 重新格式化参数
         $params = [
@@ -147,25 +147,23 @@ class ZExcel
             // 导出至浏览器
             case 1:
             default:
+                if (php_sapi_name() == 'cli') return;
                 self::export2Browser($header, $data, $params);
                 break;
             // 导出至服务器
             case 2:
+                if (php_sapi_name() != 'cli') return;
                 return self::export2Local($header, $data, $params);
-            // 大数据导出至服务器
+            // 单例模式
             case 3:
-                $params = array_merge($params, [
-                    'downloadLogId' => $extra['downloadLogId'] ?? 0,
-                    'i' => $extra['i'] ?? 0,
-                    'nums' => $extra['nums'] ?? 300
-                ]);
-                return self::bigData($header, $data, $params);
-            // 另一种大数据导出的思想
             case 4:
+                if (php_sapi_name() != 'cli') return;
                 $params = array_merge($params, [
                     'downloadLogId' => $extra['downloadLogId'] ?? 0,
+                    'offset' => $extra['offset'] ?? 0,
+                    'isLast' => $extra['isLast'] ?? true
                 ]);
-                return self::bigData2($header, $data, $params);
+                return self::singleton($header, $data, $params);
         }
 
         return true;
@@ -178,7 +176,7 @@ class ZExcel
      * @param $fileName
      * @param $fileType
      */
-    private static function export2Browser($header, $data, $extra = [])
+    private static function export2Browser($header, $data, array $extra = [])
     {
         $fileName = $extra['fileName'] ?? 'aaa';
         $fileType = $extra['fileType'] ?? 'Csv';
@@ -201,83 +199,58 @@ class ZExcel
      * @param $fileName
      * @param $fileType
      */
-    private static function export2Local($header, $data, $extra = [])
+    private static function export2Local($header, $data, array $extra = [])
     {
         $fileName = $extra['fileName'] ?? '默认文件名';
         $fileType = $extra['fileType'] ?? 'Csv';
 
         $spreadsheet = self::exportBasic($header, $data);
 
-        $writer = IOFactory::createWriter($spreadsheet, $fileType);
+        $fileInfo = self::save2File($spreadsheet, $fileType);
 
-        $path = storage_path('app/download/excel/' . date('Y-m-d') . '/');
-        if (!is_dir($path)) {
-            Storage::makeDirectory('download/excel/' . date('Y-m-d') . '/');
-        }
-        $tmp = uniqid() . '.' . strtolower($fileType);
-        $writer->save($path . $tmp);
-        $fileSize = Storage::size('download/excel/' . date('Y-m-d') . '/' . $tmp);
-
-        $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet, $writer);
+        unset($spreadsheet);
 
         return [
             'fileName' => $fileName,
             'fileType' => $fileType,
-            'fileSize' => $fileSize,
-            'fileLink' => 'download/excel/' . date('Y-m-d') . '/' . $tmp
+            'fileSize' => $fileInfo['fileSize'],
+            'fileLink' => $fileInfo['filePath']
         ];
     }
 
     /**
-     * 1000 条以上的导出
+     * 单例模式
      * @param $header
      * @param $data
      * @param array $extra
      * @return bool|\Illuminate\Http\JsonResponse
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    private static function bigData($header, $data, $extra = [])
+    private static function singleton($header, $data, array $extra = [])
     {
         if (empty($extra['downloadLogId'])) trigger_error('downloadLogId 不能为空');
 
-        $fileType = $extra['fileType'] ?? 'Csv';
+        $params['offset'] = $extra['offset'] ?? 0;
 
-        $params['i'] = $extra['i'] ?? 0;
-        $params['nums'] = $extra['nums'] ?? 300;
-
-        $spreadsheet = self::bigDataBasic($header, $data, $params);
+        $spreadsheet = self::singletonBasic($header, $data, $params);
 
         // 判断是否为最后一次
-        if (count($data) == $params['nums']) return true;
+        if (!$extra['isLast']) return true;
 
-        // 很奇葩，没有这个的时候  总是异常
-        // PhpOffice\PhpSpreadsheet\Exception: Your requested sheet index: 0 is out of bounds. The actual number of sheets is 0. in /var/www/laravel8-lab/vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Spreadsheet.php:688
         usleep(1000);
 
-        $writer = IOFactory::createWriter($spreadsheet, $fileType);
-
-        $path = storage_path('app/download/excel/' . date('Y-m-d') . '/');
-        if (!is_dir($path)) {
-            Storage::makeDirectory('download/excel/' . date('Y-m-d') . '/');
-        }
-
-        $tmp = uniqid() . '.' . strtolower($fileType);
-        $writer->save($path . $tmp);
-
-        $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet, $writer);
-
         $fileName = $extra['fileName'] ?? '默认文件名';
-        $fileSize = Storage::size('download/excel/' . date('Y-m-d') . '/' . $tmp);
-        $downloadLogId = $extra['downloadLogId'];
+        $fileType = $extra['fileType'] ?? 'Csv';
+        $fileInfo = self::save2File($spreadsheet, $fileType);
 
-        DownloadLogModel::where('id', '=', $downloadLogId)
+        unset($spreadsheet);
+
+        DownloadLogModel::where('id', '=', $extra['downloadLogId'])
             ->update([
                 'file_name' => $fileName,
                 'file_type' => $fileType,
-                'file_size' => $fileSize,
-                'file_link' => 'download/excel/' . date('Y-m-d') . '/' . $tmp,
+                'file_size' => $fileInfo['fileSize'],
+                'file_link' => $fileInfo['filePath'],
                 'status' => 1
             ]);
 
@@ -286,8 +259,8 @@ class ZExcel
         return true;
     }
 
-    // 另一种大数据导出的思想
-    private static function bigData2($header, $data, $extra = [])
+    // 利用 追加写 和 total 的导出
+    private static function appendWrite($header, $data, array $extra = [])
     {
         if (empty($extra['downloadLogId'])) trigger_error('downloadLogId 不能为空');
 
@@ -307,13 +280,38 @@ class ZExcel
         }
 
         // 首次生成 excel 文件
-        $fileType = $extra['fileType'] ?? 'Csv';
-
         $spreadsheet = self::exportBasic($header, $data);
 
+        $fileName = $extra['fileName'] ?? '默认文件名';
+        $fileType = $extra['fileType'] ?? 'Csv';
+        $fileInfo = self::save2File($spreadsheet, $fileType);
+
+        unset($spreadsheet);
+
+        DownloadLogModel::where('id', '=', $extra['downloadLogId'])
+            ->update([
+                'file_name' => $fileName,
+                'file_type' => $fileType,
+                'file_size' => $fileInfo['fileSize'],
+                'file_link' => $fileInfo['filePath'],
+                'status' => 1
+            ]);
+
+        return true;
+    }
+
+    /**
+     * 生成 excel 文件
+     * @param $spreadsheet
+     * @param $fileType
+     * @return array
+     */
+    private static function save2File($spreadsheet, $fileType)
+    {
         $writer = IOFactory::createWriter($spreadsheet, $fileType);
 
-        $path = storage_path('app/download/excel/' . date('Y-m-d') . '/');
+        $date = date('Y-m-d');
+        $path = storage_path('app/download/excel/' . $date . '/');
         if (!is_dir($path)) {
             Storage::makeDirectory('download/excel/' . date('Y-m-d') . '/');
         }
@@ -324,20 +322,10 @@ class ZExcel
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet, $writer);
 
-        $fileName = $extra['fileName'] ?? '默认文件名';
-        $fileSize = Storage::size('download/excel/' . date('Y-m-d') . '/' . $tmp);
-        $downloadLogId = $extra['downloadLogId'];
-
-        DownloadLogModel::where('id', '=', $downloadLogId)
-            ->update([
-                'file_name' => $fileName,
-                'file_type' => $fileType,
-                'file_size' => $fileSize,
-                'file_link' => 'download/excel/' . date('Y-m-d') . '/' . $tmp,
-                'status' => 1
-            ]);
-
-        return true;
+        return [
+            'filePath' => 'download/excel/' . $date . '/' . $tmp,
+            'fileSize' => Storage::size('download/excel/' . $date . '/' . $tmp)
+        ];
     }
 
     /**
@@ -372,22 +360,21 @@ class ZExcel
     }
 
     /**
-     * 大数据导出基本设置
+     * 单例导出基本设置
      * 这种利用单例模式将结果临时缓存起来，一定程度上减少了数据库和内存压力，但还可以继续优化
      * @param $header
      * @param $data
      * @param $extra
      * @return Spreadsheet
      */
-    private static function bigDataBasic($header, $data, $extra)
+    private static function singletonBasic($header, $data, $extra)
     {
-        $i = $extra['i'] ?? 0;
-        $nums = $extra['nums'] ?? 300;
+        $offset = $extra['offset'] ?? 0;
 
         $spreadsheet = SingleSpreadsheet::getInstance();
         $sheet = $spreadsheet->getActiveSheet();
 
-        if ($i == 0) {
+        if ($offset == 0) {
             $sheet = $sheet->setTitle('工作表格1');
 
             $col = 1;
@@ -398,7 +385,7 @@ class ZExcel
             unset($col);
         }
 
-        $row = ($i * $nums) + 2;
+        $row = $offset + 2;
         $header_key = array_keys($header);
         foreach ($data as $cols) {
             for ($col = 1; $col <= count($cols); $col++) {

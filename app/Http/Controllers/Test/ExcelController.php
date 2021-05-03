@@ -38,7 +38,7 @@ class ExcelController extends Controller
     public function export2Local(Request $request)
     {
         $this->validate($request, [
-            'exportType' => 'integer|in:1,2'
+            'exportType' => 'integer|in:2'
         ]);
 
         $params = $request->all();
@@ -47,8 +47,10 @@ class ExcelController extends Controller
 
         $testData = $this->testData();
 
-        $result = ZExcel::export($testData['header'], $testData['data'], ['exportType' => $params['exportType']]);
-        if (!$result) return $result;
+        if (isset($params['exportType'])) {
+            $result = ZExcel::export($testData['header'], $testData['data'], ['exportType' => 2]);
+            if ($result) return $result;
+        }
 
         return $this->respSuccess($testData['data'], '正常查看信息');
     }
@@ -56,25 +58,31 @@ class ExcelController extends Controller
     public function bigDataExport(Request $request)
     {
         $this->validate($request, [
-            'exportType' => 'integer|in:0,3'
+            'exportType' => 'integer|in:3'
         ]);
 
         $params = $request->all();
 
+        $exportType = $params['exportType'] ?? null;
+
+        $sql = TestEsModel::where('id', '<=', '30');
+
+        $total = $sql->count();
+
+        $params['total'] = $total;
         ZExcel::add2Queue($params);
 
         $i = 0;
-        $data = TestEsModel::select(['id', 'name', 'phone', 'email', 'country', 'address', 'company'])
-            ->where('id', '<', '30')
-            ->when($params['exportType'] == 3, function ($query) use (&$i, $params) {
+        $data = $sql->select(['id', 'name', 'phone', 'email', 'country', 'address', 'company'])
+            ->when($exportType, function ($query) use (&$i, $params) {
                 return $query->chunkById(10, function ($data) use (&$i, $params) {
                     $data = $data->toArray();
 
                     $extra = [
-                        'i' => $i,
-                        'nums' => 10,
-                        'exportType' => $params['exportType'],
-                        'downloadLogId' => $params['downloadLogId'] ?? 23
+                        'offset' => $i * 10,
+                        'isLast' => ($i + 1) * 10 >= $params['total'],
+                        'exportType' => 3,
+                        'downloadLogId' => $params['downloadLogId'] ?? 0
                     ];
 
                     $header = ['id' => 'ID', 'name' => '姓名', 'phone' => '电话', 'email' => '邮箱',
@@ -87,7 +95,7 @@ class ExcelController extends Controller
                 return $query->offset(0)->limit(1)->get()->toArray();
             });
 
-        if ($params['exportType'] == 3) return true;
+        if ($exportType) return true;
 
         return $this->respSuccess($data);
     }
@@ -95,7 +103,7 @@ class ExcelController extends Controller
     public function bigDataExport2(Request $request)
     {
         $this->validate($request, [
-            'exportType' => 'integer|in:0,4'
+            'exportType' => 'integer|in:4'
         ]);
 
         $params = $request->all();
@@ -104,28 +112,30 @@ class ExcelController extends Controller
 
         $total = $sql->count();
 
-        if (empty($total)) {
-            throw new \Exception('导出数据为空');
-        } else {
-            $params['total'] = $total;
-            ZExcel::add2Queue($params);
-        }
+        $params['total'] = $total;
+        ZExcel::add2Queue($params);
 
         $data = $sql->select(['id', 'name', 'phone', 'email', 'country', 'address', 'company'])
             ->offset($params['offset'] ?? 0)->limit($params['limit'] ?? 20)
             ->get()->toArray();
 
-        $header = ['id' => 'ID', 'name' => '姓名', 'phone' => '电话', 'email' => '邮箱',
-            'country' => '国家', 'address' => '地址', 'company' => '公司'];
-        $extra = [
-            'exportType' => $params['exportType'],
-            'downloadLogId' => $params['downloadLogId']
-        ];
+        if (isset($params['exportType'])) {
+            $header = ['id' => 'ID', 'name' => '姓名', 'phone' => '电话', 'email' => '邮箱',
+                'country' => '国家', 'address' => '地址', 'company' => '公司'];
+            $extra = [
+                'exportType' => $params['exportType'],
+                'downloadLogId' => $params['downloadLogId'],
+                'offset' => $params['offset'],
+                'isLast' => $params['isLast']
+            ];
+            $result = ZExcel::export($header, $data, $extra);
+            if ($result) return $result;
+        }
 
-        $result = ZExcel::export($header, $data, $extra);
-        if (!$result) return $result;
-
-        var_dump($total, $data);
+        return $this->respSuccess([
+            'total' => $total,
+            'item' => $data
+        ]);
     }
 
     public function download(Request $request)
