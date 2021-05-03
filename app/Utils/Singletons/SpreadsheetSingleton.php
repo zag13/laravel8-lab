@@ -7,12 +7,12 @@
  */
 
 
-namespace App\Utils\Single;
+namespace App\Utils\Singletons;
 
 use Exception;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
-final class SingleSpreadsheet
+final class SpreadsheetSingleton
 {
 
     private static $instance = null;
@@ -49,6 +49,6 @@ final class SingleSpreadsheet
      */
     public function __wakeup()
     {
-        throw new Exception("Cannot unserialize SingleSpreadsheet");
+        throw new Exception("Cannot unserialize SpreadsheetSingleton");
     }
 }

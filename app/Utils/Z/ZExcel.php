@@ -12,7 +12,7 @@ namespace App\Utils\Z;
 
 use App\Jobs\ExportJob;
 use App\Models\DownloadLogModel;
-use App\Utils\Single\SingleSpreadsheet;
+use App\Utils\Singletons\SpreadsheetSingleton;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -371,7 +371,7 @@ class ZExcel
     {
         $offset = $extra['offset'] ?? 0;
 
-        $spreadsheet = SingleSpreadsheet::getInstance();
+        $spreadsheet = SpreadsheetSingleton::getInstance();
         $sheet = $spreadsheet->getActiveSheet();
 
         if ($offset == 0) {

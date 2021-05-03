@@ -12,6 +12,11 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 
+/*
+ * 队列中不建议使用单例模式，因为是常驻内存的
+ * 当前调用命令为 php artisan queue:listen --queue=ExportJob
+ * TODO 后续抛弃单例模式
+ */
 class ExportJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;

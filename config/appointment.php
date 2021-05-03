@@ -15,7 +15,8 @@ return [
         'local' => [
             2,  // 异步下载至服务器
             3,  // 单例模式 + chunkById
-            4   // 单例模式 + total
+            4,  // 单例模式 + total
+            5,  // appendWrite + total
         ]
     ]
 
