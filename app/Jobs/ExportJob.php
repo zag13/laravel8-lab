@@ -40,7 +40,7 @@ class ExportJob implements ShouldQueue
         $actionName = $this->downloadLog['action_name'];
         $params = json_decode($this->downloadLog['params'], true);
 
-        if (!$className || !$actionName || !$params) return;
+        if (!$className || !$actionName || !$params) throw new \Exception('导出参数有问题');
 
         $user = UserModel::find($this->downloadLog['creator_id']);
         $user && Auth::login($user);
@@ -50,11 +50,9 @@ class ExportJob implements ShouldQueue
                 $this->export2local($className, $actionName, $params);
                 break;
             case 3:
-                $params['downloadLogId'] = $this->downloadLog['id'];
                 $this->bigDataExport($className, $actionName, $params);
                 break;
             case 4:
-                $params['downloadLogId'] = $this->downloadLog['id'];
                 $this->bigDataExport2($className, $actionName, $params);
                 break;
         }
@@ -62,6 +60,9 @@ class ExportJob implements ShouldQueue
 
     private function export2local($className, $actionName, $params)
     {
+        $params['offset'] = 0;
+        $params['limit'] = 1000;
+
         $params = (new Request())->merge($params);
         $res = (new $className)->$actionName($params);
 
@@ -78,12 +79,28 @@ class ExportJob implements ShouldQueue
 
     private function bigDataExport($className, $actionName, $params)
     {
+        $params['downloadLogId'] = $this->downloadLog['id'];
+
         $params = (new Request())->merge($params);
         (new $className)->$actionName($params);
     }
 
     private function bigDataExport2($className, $actionName, $params)
     {
-        // TODO
+        if (empty($params['total'])) throw new \Exception('导出数据为空');
+
+        $params['downloadLogId'] = $this->downloadLog['id'];
+
+        $defaultLimit = $params['defaultLimit'] ?? 300;
+        $times = ceil($params['total'] / $defaultLimit);
+
+        for ($i = 0; $i < $times; $i++) {
+            $params['offset'] = $i * $defaultLimit;
+            $params['limit'] = $defaultLimit;
+
+            $params = (new Request())->merge($params);
+            (new $className)->$actionName($params);
+        }
+
     }
 }

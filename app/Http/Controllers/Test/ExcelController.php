@@ -17,6 +17,8 @@ use App\Utils\Z\ZExcel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Writer\Csv;
 
 class ExcelController extends Controller
 {
@@ -41,8 +43,7 @@ class ExcelController extends Controller
 
         $params = $request->all();
 
-        $result = ZExcel::add2Queue($params);
-        if (!empty($result)) return $result;
+        ZExcel::add2Queue($params);
 
         $testData = $this->testData();
 
@@ -60,8 +61,7 @@ class ExcelController extends Controller
 
         $params = $request->all();
 
-        $result = ZExcel::add2Queue($params);
-        if (!empty($result)) return $result;
+        ZExcel::add2Queue($params);
 
         $i = 0;
         $data = TestEsModel::select(['id', 'name', 'phone', 'email', 'country', 'address', 'company'])
@@ -94,7 +94,38 @@ class ExcelController extends Controller
 
     public function bigDataExport2(Request $request)
     {
+        $this->validate($request, [
+            'exportType' => 'integer|in:0,4'
+        ]);
 
+        $params = $request->all();
+
+        $sql = TestEsModel::where('id', '<', 64);
+
+        $total = $sql->count();
+
+        if (empty($total)) {
+            throw new \Exception('导出数据为空');
+        } else {
+            $params['total'] = $total;
+            ZExcel::add2Queue($params);
+        }
+
+        $data = $sql->select(['id', 'name', 'phone', 'email', 'country', 'address', 'company'])
+            ->offset($params['offset'] ?? 0)->limit($params['limit'] ?? 20)
+            ->get()->toArray();
+
+        $header = ['id' => 'ID', 'name' => '姓名', 'phone' => '电话', 'email' => '邮箱',
+            'country' => '国家', 'address' => '地址', 'company' => '公司'];
+        $extra = [
+            'exportType' => $params['exportType'],
+            'downloadLogId' => $params['downloadLogId']
+        ];
+
+        $result = ZExcel::export($header, $data, $extra);
+        if (!$result) return $result;
+
+        var_dump($total, $data);
     }
 
     public function download(Request $request)

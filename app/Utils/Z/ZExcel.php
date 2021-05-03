@@ -81,21 +81,19 @@ class ZExcel
     }
 
     /**
-     * 添加到导出队列（限制为1000条）
+     * 添加到导出队列
      * @param $params
-     * @return false|\Illuminate\Http\JsonResponse
+     * @return void
      * @throws \Throwable
      */
     public static function add2Queue($params)
     {
-        if (!in_array($params['exportType'], config('appointment.exportType.local')) || php_sapi_name() == 'cli') return false;
+        if (php_sapi_name() == 'cli' || !in_array($params['exportType'], config('appointment.exportType.local'))) return;
 
         DB::beginTransaction();
         try {
             $user = Auth::user();
 
-            if (isset($params['limit'])) $params['limit'] = 1000;
-            if (isset($params['offset'])) $params['offset'] = 0;
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
             $data = [
@@ -115,14 +113,13 @@ class ZExcel
         }
         DB::commit();
 
-        // send 方法返回前端后，后续代码依旧运行，
-        // 所以要在控制器强制返回而不是使用 send 方法
-        return response()->json([
+        // send 方法返回前端后，后续代码依旧运行，所以要在控制器强制返回而不是使用 send 方法
+        /*return response()->json([
             'code' => 10000,
             'msg' => '加入下载列表成功'
-        ]);
-        // 也可以用这种方法来终止后续代码的运行，但是感觉不爽
-        // throw new \Exception('加入下载列表成功','10000');
+        ]);*/
+        // 算了，这种方法感觉挺爽的
+        throw new \Exception('加入下载列表成功', '10000');
     }
 
     /**
@@ -165,7 +162,9 @@ class ZExcel
                 return self::bigData($header, $data, $params);
             // 另一种大数据导出的思想
             case 4:
-                $params = array_merge($params, []);
+                $params = array_merge($params, [
+                    'downloadLogId' => $extra['downloadLogId'] ?? 0,
+                ]);
                 return self::bigData2($header, $data, $params);
         }
 
@@ -290,7 +289,55 @@ class ZExcel
     // 另一种大数据导出的思想
     private static function bigData2($header, $data, $extra = [])
     {
+        if (empty($extra['downloadLogId'])) trigger_error('downloadLogId 不能为空');
 
+        $download = DownloadLogModel::findOrFail($extra['downloadLogId'], ['file_name', 'file_type', 'file_link'])->toArray();
+
+        // 对已有 excel 文件进行追加写
+        if ($download['file_link']) {
+            $fileName = $download['file_name'];
+            $fileType = $download['file_type'];
+            $filePath = storage_path('app/') . $download['file_link'];
+
+            if (!is_file($filePath)) trigger_error('文件不存在');
+
+            // TODO 相当于重新生成，不是追加写
+            $reader = IOFactory::createReader(ucfirst(strtolower($fileType)));
+
+        }
+
+        // 首次生成 excel 文件
+        $fileType = $extra['fileType'] ?? 'Csv';
+
+        $spreadsheet = self::exportBasic($header, $data);
+
+        $writer = IOFactory::createWriter($spreadsheet, $fileType);
+
+        $path = storage_path('app/download/excel/' . date('Y-m-d') . '/');
+        if (!is_dir($path)) {
+            Storage::makeDirectory('download/excel/' . date('Y-m-d') . '/');
+        }
+
+        $tmp = uniqid() . '.' . strtolower($fileType);
+        $writer->save($path . $tmp);
+
+        $spreadsheet->disconnectWorksheets();
+        unset($spreadsheet, $writer);
+
+        $fileName = $extra['fileName'] ?? '默认文件名';
+        $fileSize = Storage::size('download/excel/' . date('Y-m-d') . '/' . $tmp);
+        $downloadLogId = $extra['downloadLogId'];
+
+        DownloadLogModel::where('id', '=', $downloadLogId)
+            ->update([
+                'file_name' => $fileName,
+                'file_type' => $fileType,
+                'file_size' => $fileSize,
+                'file_link' => 'download/excel/' . date('Y-m-d') . '/' . $tmp,
+                'status' => 1
+            ]);
+
+        return true;
     }
 
     /**
