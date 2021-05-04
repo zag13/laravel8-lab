@@ -15,8 +15,9 @@ use Illuminate\Support\Facades\Auth;
 /*
  * 队列中不建议使用单例模式，因为是常驻内存的
  * 当前调用命令为 php artisan queue:listen --queue=ExportJob
- * TODO 后续抛弃单例模式
+ * 淦，不仅仅是单例模式其它控制器方法也是会缓存的
  */
+
 class ExportJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -55,10 +56,11 @@ class ExportJob implements ShouldQueue
                 $this->export2local($className, $actionName, $params);
                 break;
             case 3:
-                $this->singleton($className, $actionName, $params);
+                $this->chunkCall($className, $actionName, $params);
                 break;
             case 4:
-                $this->singleton2($className, $actionName, $params);
+            case 6:
+                $this->loopCall($className, $actionName, $params);
                 break;
         }
     }
@@ -89,14 +91,14 @@ class ExportJob implements ShouldQueue
     }
 
     /**
-     * 单例模式 + chunkById
+     * chunkById
      * 优点：减轻了参数校验
      * 缺点：代码侵入大
      * @param $className
      * @param $actionName
      * @param $params
      */
-    private function singleton($className, $actionName, $params)
+    private function chunkCall($className, $actionName, $params)
     {
         $params['downloadLogId'] = $this->downloadLog['id'];
 
@@ -105,7 +107,7 @@ class ExportJob implements ShouldQueue
     }
 
     /**
-     * 单例模式 + total
+     * 循环调用
      * 优点：代码侵入小
      * 缺点：参数校验会更多
      * @param $className
@@ -113,7 +115,7 @@ class ExportJob implements ShouldQueue
      * @param $params
      * @throws \Exception
      */
-    private function singleton2($className, $actionName, $params)
+    private function loopCall($className, $actionName, $params)
     {
         $params['downloadLogId'] = $this->downloadLog['id'];
 

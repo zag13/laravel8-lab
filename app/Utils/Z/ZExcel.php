@@ -142,28 +142,34 @@ class ZExcel
 
         $exportType = array_reduce(config('appointment.exportType'), 'array_merge', []);
         if (!in_array($params['exportType'], $exportType)) trigger_error('导出类型不合法');
+        if (in_array($params['exportType'], config('appointment.exportType.browser')) && php_sapi_name() == 'cli') return;
+        if (in_array($params['exportType'], config('appointment.exportType.local')) && php_sapi_name() != 'cli') return;
 
         switch ($params['exportType']) {
             // 导出至浏览器
             case 1:
-            default:
-                if (php_sapi_name() == 'cli') return;
                 self::export2Browser($header, $data, $params);
                 break;
             // 导出至服务器
             case 2:
-                if (php_sapi_name() != 'cli') return;
                 return self::export2Local($header, $data, $params);
             // 单例模式
             case 3:
             case 4:
-                if (php_sapi_name() != 'cli') return;
                 $params = array_merge($params, [
                     'downloadLogId' => $extra['downloadLogId'] ?? 0,
                     'offset' => $extra['offset'] ?? 0,
                     'isLast' => $extra['isLast'] ?? true
                 ]);
                 return self::singleton($header, $data, $params);
+            // 追加写
+            case 6:
+                $params = array_merge($params, [
+                    'downloadLogId' => $extra['downloadLogId'] ?? 0,
+                    'offset' => $extra['offset'] ?? 0,
+                    'isLast' => $extra['isLast'] ?? true
+                ]);
+                return self::appendWrite($header, $data, $params);
         }
 
         return true;
@@ -228,21 +234,19 @@ class ZExcel
      */
     private static function singleton($header, $data, array $extra = [])
     {
-        if (empty($extra['downloadLogId'])) trigger_error('downloadLogId 不能为空');
+        DownloadLogModel::findOrFail($extra['downloadLogId'], ['id'])->toArray();
 
         $params['offset'] = $extra['offset'] ?? 0;
 
         $spreadsheet = self::singletonBasic($header, $data, $params);
 
-        // 判断是否为最后一次
         if (!$extra['isLast']) return true;
-
-        usleep(1000);
 
         $fileName = $extra['fileName'] ?? '默认文件名';
         $fileType = $extra['fileType'] ?? 'Csv';
         $fileInfo = self::save2File($spreadsheet, $fileType);
 
+        $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
 
         DownloadLogModel::where('id', '=', $extra['downloadLogId'])
@@ -262,21 +266,46 @@ class ZExcel
     // 利用 追加写 和 total 的导出
     private static function appendWrite($header, $data, array $extra = [])
     {
-        if (empty($extra['downloadLogId'])) trigger_error('downloadLogId 不能为空');
-
         $download = DownloadLogModel::findOrFail($extra['downloadLogId'], ['file_name', 'file_type', 'file_link'])->toArray();
 
         // 对已有 excel 文件进行追加写
         if ($download['file_link']) {
-            $fileName = $download['file_name'];
             $fileType = $download['file_type'];
             $filePath = storage_path('app/') . $download['file_link'];
 
             if (!is_file($filePath)) trigger_error('文件不存在');
 
-            // TODO 相当于重新生成，不是追加写
+            // FIXME 相当于重新生成，不是追加写
             $reader = IOFactory::createReader(ucfirst(strtolower($fileType)));
+            $spreadsheet = $reader->load($filePath);
+            $sheet = $spreadsheet->getActiveSheet();
 
+            $row = $extra['offset'] + 2;
+            $header_key = array_keys($header);
+            foreach ($data as $cols) {
+                for ($col = 1; $col <= count($cols); $col++) {
+                    $sheet->setCellValueByColumnAndRow($col, $row, $cols[$header_key[$col - 1]]);
+                }
+                $row++;
+            }
+            unset($row);
+
+            $writer = IOFactory::createWriter($spreadsheet, $fileType);
+            $writer->save($filePath);
+            $spreadsheet->disconnectWorksheets();
+            unset($spreadsheet, $writer);
+
+            if (!isset($extra['isLast'])) return false;
+
+            $fileSize = Storage::size($download['file_link']);
+
+            DownloadLogModel::where('id', '=', $extra['downloadLogId'])
+                ->update([
+                    'file_size' => $fileSize,
+                    'status' => 1
+                ]);
+
+            return true;
         }
 
         // 首次生成 excel 文件
@@ -286,15 +315,15 @@ class ZExcel
         $fileType = $extra['fileType'] ?? 'Csv';
         $fileInfo = self::save2File($spreadsheet, $fileType);
 
+        $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
 
         DownloadLogModel::where('id', '=', $extra['downloadLogId'])
             ->update([
                 'file_name' => $fileName,
                 'file_type' => $fileType,
-                'file_size' => $fileInfo['fileSize'],
                 'file_link' => $fileInfo['filePath'],
-                'status' => 1
+                'status' => 2
             ]);
 
         return true;
@@ -337,10 +366,11 @@ class ZExcel
     private static function exportBasic($header, $data)
     {
         $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet()->setTitle('工作表格1');
+        $sheet = $spreadsheet->getActiveSheet();
 
         $col = 1;
         foreach ($header as $value) {
+            $sheet->setTitle('工作表格1');
             $sheet->setCellValueByColumnAndRow($col, 1, $value);
             $col++;
         }

@@ -103,12 +103,13 @@ class ExcelController extends Controller
     public function bigDataExport2(Request $request)
     {
         $this->validate($request, [
+            'endId' => 'required|integer',
             'exportType' => 'integer|in:4'
         ]);
 
         $params = $request->all();
 
-        $sql = TestEsModel::where('id', '<', 64);
+        $sql = TestEsModel::where('id', '<', $params['endId']);
 
         $total = $sql->count();
 
@@ -124,6 +125,45 @@ class ExcelController extends Controller
                 'country' => '国家', 'address' => '地址', 'company' => '公司'];
             $extra = [
                 'exportType' => $params['exportType'],
+                'downloadLogId' => $params['downloadLogId'],
+                'offset' => $params['offset'],
+                'isLast' => $params['isLast']
+            ];
+            $result = ZExcel::export($header, $data, $extra);
+            if ($result) return $result;
+        }
+
+        return $this->respSuccess([
+            'total' => $total,
+            'item' => $data
+        ]);
+    }
+
+    public function bigDataExport4(Request $request)
+    {
+        $this->validate($request, [
+            'endId' => 'required|integer',
+            'exportType' => 'integer|in:6'
+        ]);
+
+        $params = $request->all();
+
+        $sql = TestEsModel::where('id', '<', $params['endId']);
+
+        $total = $sql->count();
+
+        $params['total'] = $total;
+        ZExcel::add2Queue($params);
+
+        $data = $sql->select(['id', 'name', 'phone', 'email', 'country', 'address', 'company'])
+            ->offset($params['offset'] ?? 0)->limit($params['limit'] ?? 20)
+            ->get()->toArray();
+
+        if (isset($params['exportType'])) {
+            $header = ['id' => 'ID', 'name' => '姓名', 'phone' => '电话', 'email' => '邮箱',
+                'country' => '国家', 'address' => '地址', 'company' => '公司'];
+            $extra = [
+                'exportType' => 6,
                 'downloadLogId' => $params['downloadLogId'],
                 'offset' => $params['offset'],
                 'isLast' => $params['isLast']
