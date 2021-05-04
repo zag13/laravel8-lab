@@ -53,7 +53,7 @@
 [phpspreadsheet](https://phpspreadsheet.readthedocs.io/en/latest/)  is a library written in pure PHP and offers a set of classes that allow you to read and write various spreadsheet file formats such as Excel and LibreOffice Calc.
 
 1. `composer require phpoffice/phpspreadsheet`
-2. 大数据导出 TODO
+2. 大数据导出，看代码 （淦！）
 
 > [ PhpSpreadSheet 使用总结](https://learnku.com/articles/29608)
 >
