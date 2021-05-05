@@ -142,8 +142,8 @@ class ZExcel
 
         $exportType = array_reduce(config('appointment.exportType'), 'array_merge', []);
         if (!in_array($params['exportType'], $exportType)) trigger_error('导出类型不合法');
-        if (in_array($params['exportType'], config('appointment.exportType.browser')) && php_sapi_name() == 'cli') return;
-        if (in_array($params['exportType'], config('appointment.exportType.local')) && php_sapi_name() != 'cli') return;
+        if (in_array($params['exportType'], config('appointment.exportType.browser')) && php_sapi_name() == 'cli') trigger_error('应当在在浏览器环境下运行');
+        if (in_array($params['exportType'], config('appointment.exportType.local')) && php_sapi_name() != 'cli') trigger_error('应当在在命令行环境下运行');
 
         switch ($params['exportType']) {
             // 导出至浏览器
@@ -184,8 +184,8 @@ class ZExcel
      */
     private static function export2Browser($header, $data, array $extra = [])
     {
-        $fileName = $extra['fileName'] ?? 'aaa';
-        $fileType = $extra['fileType'] ?? 'Csv';
+        $fileName = $extra['fileName'];
+        $fileType = $extra['fileType'];
 
         $spreadsheet = self::exportBasic($header, $data);
 
@@ -207,8 +207,8 @@ class ZExcel
      */
     private static function export2Local($header, $data, array $extra = [])
     {
-        $fileName = $extra['fileName'] ?? '默认文件名';
-        $fileType = $extra['fileType'] ?? 'Csv';
+        $fileName = $extra['fileName'];
+        $fileType = $extra['fileType'];
 
         $spreadsheet = self::exportBasic($header, $data);
 
@@ -234,22 +234,22 @@ class ZExcel
      */
     private static function singleton($header, $data, array $extra = [])
     {
-        DownloadLogModel::findOrFail($extra['downloadLogId'], ['id'])->toArray();
+        $downloadLogId = $extra['downloadLogId'];
+        DownloadLogModel::findOrFail($downloadLogId, ['id'])->toArray();
 
-        $params['offset'] = $extra['offset'] ?? 0;
-
+        $params['offset'] = $extra['offset'];
         $spreadsheet = self::singletonBasic($header, $data, $params);
 
         if (!$extra['isLast']) return true;
 
-        $fileName = $extra['fileName'] ?? '默认文件名';
-        $fileType = $extra['fileType'] ?? 'Csv';
+        $fileName = $extra['fileName'];
+        $fileType = $extra['fileType'];
         $fileInfo = self::save2File($spreadsheet, $fileType);
 
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
 
-        DownloadLogModel::where('id', '=', $extra['downloadLogId'])
+        DownloadLogModel::where('id', '=', $downloadLogId)
             ->update([
                 'file_name' => $fileName,
                 'file_type' => $fileType,
@@ -266,7 +266,8 @@ class ZExcel
     // 利用 追加写 和 total 的导出
     private static function appendWrite($header, $data, array $extra = [])
     {
-        $download = DownloadLogModel::findOrFail($extra['downloadLogId'], ['file_name', 'file_type', 'file_link'])->toArray();
+        $downloadLogId = $extra['downloadLogId'];
+        $download = DownloadLogModel::findOrFail($downloadLogId, ['file_name', 'file_type', 'file_link'])->toArray();
 
         // 对已有 excel 文件进行追加写
         if ($download['file_link']) {
@@ -311,14 +312,14 @@ class ZExcel
         // 首次生成 excel 文件
         $spreadsheet = self::exportBasic($header, $data);
 
-        $fileName = $extra['fileName'] ?? '默认文件名';
-        $fileType = $extra['fileType'] ?? 'Csv';
+        $fileName = $extra['fileName'];
+        $fileType = $extra['fileType'];
         $fileInfo = self::save2File($spreadsheet, $fileType);
 
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
 
-        DownloadLogModel::where('id', '=', $extra['downloadLogId'])
+        DownloadLogModel::where('id', '=', $downloadLogId)
             ->update([
                 'file_name' => $fileName,
                 'file_type' => $fileType,
@@ -399,7 +400,7 @@ class ZExcel
      */
     private static function singletonBasic($header, $data, $extra)
     {
-        $offset = $extra['offset'] ?? 0;
+        $offset = $extra['offset'];
 
         $spreadsheet = SpreadsheetSingleton::getInstance();
         $sheet = $spreadsheet->getActiveSheet();
@@ -433,7 +434,7 @@ class ZExcel
      * @param string $fileName
      * @param string $fileType
      */
-    private static function setHeader($fileName = '默认文件名', $fileType = 'Csv')
+    private static function setHeader($fileName, $fileType)
     {
         $type = ['Xlsx', 'Xls', 'Csv'];
 
