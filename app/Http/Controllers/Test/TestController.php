@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Test;
 
 use App\Events\UserSendMessage;
 use App\Http\Controllers\Core\Controller;
-use App\Models\UserModel;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class TestController extends Controller
@@ -25,7 +25,7 @@ class TestController extends Controller
 
         $params = request()->all();
 
-        $data = UserModel::where('id', '=', $params['id'])->first()->toArray();
+        $data = User::where('id', '=', $params['id'])->first()->toArray();
 
         return response()->json($data);
     }
@@ -74,7 +74,7 @@ class TestController extends Controller
 
     public function broadcast()
     {
-        $user = UserModel::find(1);
+        $user = User::find(1);
         $message = 'hello,world!';
         event(new UserSendMessage($user, $message));
     }

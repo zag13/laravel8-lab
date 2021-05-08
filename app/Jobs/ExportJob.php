@@ -2,8 +2,8 @@
 
 namespace App\Jobs;
 
-use App\Models\DownloadLogModel;
-use App\Models\UserModel;
+use App\Models\DownloadLog;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -30,7 +30,7 @@ class ExportJob implements ShouldQueue
      * Create a new job instance.
      * @return void
      */
-    public function __construct(DownloadLogModel $downloadLog)
+    public function __construct(DownloadLog $downloadLog)
     {
         $this->downloadLog = $downloadLog;
         $this->queue = 'ExportJob';
@@ -48,7 +48,7 @@ class ExportJob implements ShouldQueue
 
         if (!$className || !$actionName || !$params) throw new \Exception('导出参数有问题');
 
-        $user = UserModel::find($this->downloadLog['creator_id']);
+        $user = User::find($this->downloadLog['creator_id']);
         $user && Auth::login($user);
 
         switch ($params['exportType']) {

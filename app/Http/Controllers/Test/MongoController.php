@@ -34,7 +34,7 @@ class MongoController extends Controller
 
         //$data = PostsMongo::where('_id', '=', '606474e89aa48f142404c0bb')->increment('views')->save();
 
-        //$data = DownloadLogModel::where('id', '=', 1)->increment('file_siz');
+        //$data = DownloadLog::where('id', '=', 1)->increment('file_siz');
 
         //dump($data);
     }

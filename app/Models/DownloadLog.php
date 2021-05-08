@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Models\Core\Model;
 
-class DownloadLogModel extends Model
+class DownloadLog extends Model
 {
     public $table = "download_log";
 
@@ -32,7 +32,7 @@ class DownloadLogModel extends Model
      */
     public function user()
     {
-        return $this->belongsTo(UserModel::class, 'creator_id', 'id');
+        return $this->belongsTo(User::class, 'creator_id', 'id');
     }
 
     /**

@@ -13,7 +13,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  *
  * @mixin \Eloquent
  */
-class UserModel extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable, HasRoles;
 
@@ -74,7 +74,7 @@ class UserModel extends Authenticatable implements JWTSubject
      */
     public function downloadLog()
     {
-        return $this->hasOne(DownloadLogModel::class, 'creator_id', 'id');
+        return $this->hasOne(DownloadLog::class, 'creator_id', 'id');
     }
 
     /**
@@ -82,6 +82,6 @@ class UserModel extends Authenticatable implements JWTSubject
      */
     public function downloadLogs()
     {
-        return $this->hasMany(DownloadLogModel::class, 'creator_id', 'id');
+        return $this->hasMany(DownloadLog::class, 'creator_id', 'id');
     }
 }

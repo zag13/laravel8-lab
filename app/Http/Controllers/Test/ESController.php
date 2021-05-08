@@ -11,7 +11,7 @@ namespace App\Http\Controllers\Test;
 
 
 use App\Http\Controllers\Core\Controller;
-use App\Models\TestEsModel;
+use App\Models\TestEs;
 use App\Utils\Es\MySearchRule;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Http\Request;
@@ -80,7 +80,7 @@ class ESController extends Controller
     {
         $q = $request->get('q');
         $paginator = [];
-        if ($q) $paginator = TestEsModel::search($q)
+        if ($q) $paginator = TestEs::search($q)
             ->rule(MySearchRule::class)
             ->paginate(5);
 
@@ -90,7 +90,7 @@ class ESController extends Controller
 
     public function faker()
     {
-        TestEsModel::factory(90)->create();
+        TestEs::factory(90)->create();
     }
 
 }

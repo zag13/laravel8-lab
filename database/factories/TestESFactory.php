@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\TestEsModel;
+use App\Models\TestEs;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TestESFactory extends Factory
@@ -12,7 +12,7 @@ class TestESFactory extends Factory
      *
      * @var string
      */
-    protected $model = TestEsModel::class;
+    protected $model = TestEs::class;
 
     /**
      * Define the model's default state.

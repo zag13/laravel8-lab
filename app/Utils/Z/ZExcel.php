@@ -11,7 +11,7 @@ namespace App\Utils\Z;
 
 
 use App\Jobs\ExportJob;
-use App\Models\DownloadLogModel;
+use App\Models\DownloadLog;
 use App\Utils\Singletons\SpreadsheetSingleton;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -106,7 +106,7 @@ class ZExcel
                 'status' => 0
             ];
 
-            $downloadLog = DownloadLogModel::create($data);
+            $downloadLog = DownloadLog::create($data);
             ExportJob::dispatch($downloadLog);
         } catch (\Throwable $throwable) {
             DB::rollBack();
@@ -235,7 +235,7 @@ class ZExcel
     private static function singleton($header, $data, array $extra = [])
     {
         $downloadLogId = $extra['downloadLogId'];
-        DownloadLogModel::findOrFail($downloadLogId, ['id'])->toArray();
+        DownloadLog::findOrFail($downloadLogId, ['id'])->toArray();
 
         $params['offset'] = $extra['offset'];
         $spreadsheet = self::singletonBasic($header, $data, $params);
@@ -249,7 +249,7 @@ class ZExcel
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
 
-        DownloadLogModel::where('id', '=', $downloadLogId)
+        DownloadLog::where('id', '=', $downloadLogId)
             ->update([
                 'file_name' => $fileName,
                 'file_type' => $fileType,
@@ -267,7 +267,7 @@ class ZExcel
     private static function appendWrite($header, $data, array $extra = [])
     {
         $downloadLogId = $extra['downloadLogId'];
-        $download = DownloadLogModel::findOrFail($downloadLogId, ['file_name', 'file_type', 'file_link'])->toArray();
+        $download = DownloadLog::findOrFail($downloadLogId, ['file_name', 'file_type', 'file_link'])->toArray();
 
         // 对已有 excel 文件进行追加写
         if ($download['file_link']) {
@@ -300,7 +300,7 @@ class ZExcel
 
             $fileSize = Storage::size($download['file_link']);
 
-            DownloadLogModel::where('id', '=', $extra['downloadLogId'])
+            DownloadLog::where('id', '=', $extra['downloadLogId'])
                 ->update([
                     'file_size' => $fileSize,
                     'status' => 1
@@ -319,7 +319,7 @@ class ZExcel
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
 
-        DownloadLogModel::where('id', '=', $downloadLogId)
+        DownloadLog::where('id', '=', $downloadLogId)
             ->update([
                 'file_name' => $fileName,
                 'file_type' => $fileType,

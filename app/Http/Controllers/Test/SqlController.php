@@ -11,7 +11,9 @@ namespace App\Http\Controllers\Test;
 
 
 use App\Http\Controllers\Core\Controller;
-use App\Models\UserModel;
+use App\Models\Message;
+use App\Models\TestEs;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 
@@ -73,7 +75,7 @@ class SqlController extends Controller
             })->get();*/
         //select * from `users` left join (select `file_name`, `creator_id` from `download_log`) as `d_log` on `users`.`id` = `d_log`.`creator_id`
 
-        /*$users = UserModel::where(function ($query) {
+        /*$users = User::where(function ($query) {
             $query->select('creator_id')
                 ->from('download_log', 'd_log')
                 ->whereColumn('d_log.creator_id', 'users.id')
@@ -97,13 +99,13 @@ class SqlController extends Controller
         // collection chunk cursor
 
         // 动态查询作用域
-//        $dLog = DownloadLogModel::creator('1')->first();
+//        $dLog = DownloadLog::creator('1')->first();
 
         // 批量不能触发事件
-//        UserModel::where('id', '=', 1)->update(['name' => 'zs666']);
+//        User::where('id', '=', 1)->update(['name' => 'zs666']);
 
         // 单条可以触发
-        /*$user = UserModel::where('id', '=', 1)->first();
+        /*$user = User::where('id', '=', 1)->first();
         $user->name = 'zs6667';
         $user->update();*/
 
@@ -113,17 +115,17 @@ class SqlController extends Controller
     public function relationships()
     {
         // 一对一$user
-//        $user = UserModel::select(['id', 'name'])->find(2)->downloadLog;
+//        $user = User::select(['id', 'name'])->find(2)->downloadLog;
         /*select `id`, `name` from `users` where `users` . `id` = '1' limit 1
         select * from `download_log` where `download_log` . `creator_id` = '1' and `download_log` . `creator_id` is not null limit 1*/
 
         // 一对一 (belongs)
-//        $downloadLog = DownloadLogModel::select(['id', 'file_name', 'creator_id'])->find(2)->user;
+//        $downloadLog = DownloadLog::select(['id', 'file_name', 'creator_id'])->find(2)->user;
         /*select `id`, `file_name`, `creator_id` from `download_log` where `download_log`.`id` = '1' limit 1
         select * from `users` where `users`.`id` = '1' limit 1 */
 
         // 一对多
-//        $user = UserModel::select(['id', 'name'])->find(1)->downloadLogs;
+//        $user = User::select(['id', 'name'])->find(1)->downloadLogs;
 //        foreach ($downloadLogs as $downloadLog) {
 //            echo $downloadLog->file_name;
 //        }
@@ -131,27 +133,45 @@ class SqlController extends Controller
         select * from `download_log` where `download_log`.`creator_id` = '1' and `download_log`.`creator_id` is not null*/
 
         // 一对多 (关联查询)
-//        $user = UserModel::select(['id', 'name'])->find(1)->downloadLogs()->select('file_name')->where('id', '=', 2)->get();
+//        $user = User::select(['id', 'name'])->find(1)->downloadLogs()->select('file_name')->where('id', '=', 2)->get();
         /*select `id`, `name` from `users` where `users`.`id` = '1' limit 1
         select `file_name` from `download_log` where `download_log`.`creator_id` = '1' and `download_log`.`creator_id` is not null and `id` = '2'*/
 
         // 一对多 (belongs) 和一对一基本一样
 
         // 渴求式加载
-//        $user = UserModel::with('downloadLogs')->get();
+//        $user = User::with('downloadLogs')->get();
         /*select * from `users`
         select * from `download_log` where `download_log`.`creator_id` in (1, 2)*/
 
-//        $user = UserModel::with('downloadLogs:file_name,file_type,creator_id')->get()->toArray();
+//        $user = User::with('downloadLogs:file_name,file_type,creator_id')->get()->toArray();
         /*select * from `users`
         select `file_name`, `file_type`, `creator_id` from `download_log` where `download_log`.`creator_id` in (1, 2)*/
 
-//        $user = UserModel::with(['downloadLogs' => function ($query) {
+//        $user = User::with(['downloadLogs' => function ($query) {
 //            // limit 不应该在渴求式条件约束中使用（限制条数的话，会优先满足上面的用户，可能与预期结果不符合）
 //            $query->select(['file_name', 'creator_id'])->limit(1);
 //        }])->limit(1)->get()->toArray();
 
         // 不建议使用关联进行 创建 和 更新 操作
+    }
+
+    public function test()
+    {
+        $inserted = [
+            [],
+            []
+        ];
+        Message::insert($inserted);
+    }
+
+    /**
+     * 合并 sql
+     */
+    public function sql1()
+    {
+        $db = TestEs::select([]);
+        return 1;
     }
 
 }

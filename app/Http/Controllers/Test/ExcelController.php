@@ -11,14 +11,12 @@ namespace App\Http\Controllers\Test;
 
 
 use App\Http\Controllers\Core\Controller;
-use App\Models\DownloadLogModel;
-use App\Models\TestEsModel;
+use App\Models\DownloadLog;
+use App\Models\TestEs;
 use App\Utils\Z\ZExcel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Writer\Csv;
 
 class ExcelController extends Controller
 {
@@ -65,7 +63,7 @@ class ExcelController extends Controller
 
         $exportType = $params['exportType'] ?? null;
 
-        $sql = TestEsModel::where('id', '<=', '30');
+        $sql = TestEs::where('id', '<=', '30');
 
         $total = $sql->count();
 
@@ -109,7 +107,7 @@ class ExcelController extends Controller
 
         $params = $request->all();
 
-        $sql = TestEsModel::where('id', '<', $params['endId']);
+        $sql = TestEs::where('id', '<', $params['endId']);
 
         $total = $sql->count();
 
@@ -148,7 +146,7 @@ class ExcelController extends Controller
 
         $params = $request->all();
 
-        $sql = TestEsModel::where('id', '<', $params['endId']);
+        $sql = TestEs::where('id', '<', $params['endId']);
 
         $total = $sql->count();
 
@@ -187,7 +185,7 @@ class ExcelController extends Controller
         $id = $request->input('id');
 
         $user = Auth::user();
-        $downloadLog = DownloadLogModel::where('id', '=', $id)->firstOrFail();
+        $downloadLog = DownloadLog::where('id', '=', $id)->firstOrFail();
         if ($downloadLog['creator_id'] != $user['id']) throw new \Exception('你无权下载该数据');
 
         $fileFullName = $downloadLog['file_name'] . '.' . strtolower($downloadLog['file_type']);

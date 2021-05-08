@@ -2,30 +2,30 @@
 
 namespace App\Observers;
 
-use App\Models\UserModel;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 // 只支持单条数据操作，批量操作无法记录
 class UserObserver
 {
     /**
-     * Handle the UserModel "created" event.
+     * Handle the User "created" event.
      *
-     * @param  \App\Models\UserModel  $user
+     * @param  \App\Models\User  $user
      * @return void
      */
-    public function created(UserModel $user)
+    public function created(User $user)
     {
         //
     }
 
     /**
-     * Handle the UserModel "updated" event.
+     * Handle the User "updated" event.
      *
-     * @param  \App\Models\UserModel  $user
+     * @param  \App\Models\User  $user
      * @return void
      */
-    public function updated(UserModel $user)
+    public function updated(User $user)
     {
         $context = [
             'id' => $user['id'],
@@ -36,34 +36,34 @@ class UserObserver
     }
 
     /**
-     * Handle the UserModel "deleted" event.
+     * Handle the User "deleted" event.
      *
-     * @param  \App\Models\UserModel  $user
+     * @param  \App\Models\User  $user
      * @return void
      */
-    public function deleted(UserModel $user)
+    public function deleted(User $user)
     {
         //
     }
 
     /**
-     * Handle the UserModel "restored" event.
+     * Handle the User "restored" event.
      *
-     * @param  \App\Models\UserModel  $user
+     * @param  \App\Models\User  $user
      * @return void
      */
-    public function restored(UserModel $user)
+    public function restored(User $user)
     {
         //
     }
 
     /**
-     * Handle the UserModel "force deleted" event.
+     * Handle the User "force deleted" event.
      *
-     * @param  \App\Models\UserModel  $user
+     * @param  \App\Models\User  $user
      * @return void
      */
-    public function forceDeleted(UserModel $user)
+    public function forceDeleted(User $user)
     {
         //
     }
