@@ -64,7 +64,6 @@ Route::group([
     Route::get('readExcel', [ExcelController::class, 'readExcel']);
     Route::get('export2Browser', [ExcelController::class, 'export2Browser']);
     Route::get('export2Local', [ExcelController::class, 'export2Local']);
-    Route::get('bigDataExport', [ExcelController::class, 'bigDataExport']);
     Route::get('bigDataExport2', [ExcelController::class, 'bigDataExport2']);
     Route::get('bigDataExport4', [ExcelController::class, 'bigDataExport4']);
     Route::get('download', [ExcelController::class, 'download']);

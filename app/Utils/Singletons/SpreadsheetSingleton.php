@@ -14,7 +14,6 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 final class SpreadsheetSingleton
 {
-
     private static $instance = null;
 
     /**

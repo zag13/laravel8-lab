@@ -56,10 +56,6 @@ class ExportJob implements ShouldQueue
                 $this->export2local($className, $actionName, $params);
                 break;
             case 3:
-                $this->chunkCall($className, $actionName, $params);
-                break;
-            case 4:
-            case 6:
                 $this->loopCall($className, $actionName, $params);
                 break;
         }
@@ -71,7 +67,7 @@ class ExportJob implements ShouldQueue
      * @param $actionName
      * @param $params
      */
-    private function export2local($className, $actionName, $params)
+    private function export2local($className, $actionName, array $params = [])
     {
         $params['offset'] = 0;
         $params['limit'] = 1000;
@@ -91,45 +87,36 @@ class ExportJob implements ShouldQueue
     }
 
     /**
-     * chunkById
-     * 优点：减轻了参数校验
-     * 缺点：代码侵入大
-     * @param $className
-     * @param $actionName
-     * @param $params
-     */
-    private function chunkCall($className, $actionName, $params)
-    {
-        $params['downloadLogId'] = $this->downloadLog['id'];
-
-        $params = (new Request())->merge($params);
-        (new $className)->$actionName($params);
-    }
-
-    /**
      * 循环调用
-     * 优点：代码侵入小
-     * 缺点：参数校验会更多
      * @param $className
      * @param $actionName
      * @param $params
      * @throws \Exception
      */
-    private function loopCall($className, $actionName, $params)
+    private function loopCall($className, $actionName, array $params = [])
     {
-        $params['downloadLogId'] = $this->downloadLog['id'];
-
+        $i = 0;
         $defaultLimit = $params['defaultLimit'] ?? 300;
-        $times = ceil($params['total'] / $defaultLimit);
 
-        for ($i = 0; $i < $times; $i++) {
+        do {
             $params['offset'] = $i * $defaultLimit;
             $params['limit'] = $defaultLimit;
-            $params['isLast'] = $i == ($times - 1);
 
             $params = (new Request())->merge($params);
-            (new $className)->$actionName($params);
-        }
+            $res = (new $className)->$actionName($params);
+        } while ($res === true);
+
+        if (!isset($res['fileLink'])) throw new \Exception('导出失败：' . json_encode($res));
+
+        $data = [
+            'file_name' => $res['fileName'],
+            'file_type' => $res['fileType'],
+            'file_size' => $res['fileSize'],
+            'file_link' => $res['fileLink'],
+            'status' => 1
+        ];
+
+        $this->downloadLog->update($data);
     }
 
 }

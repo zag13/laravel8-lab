@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ExcelController extends Controller
 {
+
     public function readExcel()
     {
         $aaa = ZExcel::readExcelByPath('download/excel/2021-05-01/608cf76c3cd43.csv');
@@ -51,51 +52,6 @@ class ExcelController extends Controller
         }
 
         return $this->respSuccess($testData['data'], '正常查看信息');
-    }
-
-    public function bigDataExport(Request $request)
-    {
-        $this->validate($request, [
-            'exportType' => 'integer|in:3'
-        ]);
-
-        $params = $request->all();
-
-        $exportType = $params['exportType'] ?? null;
-
-        $sql = TestEs::where('id', '<=', '30');
-
-        $total = $sql->count();
-
-        $params['total'] = $total;
-        ZExcel::add2Queue($params);
-
-        $i = 0;
-        $data = $sql->select(['id', 'name', 'phone', 'email', 'country', 'address', 'company'])
-            ->when($exportType, function ($query) use (&$i, $params) {
-                return $query->chunkById(10, function ($data) use (&$i, $params) {
-                    $data = $data->toArray();
-
-                    $extra = [
-                        'offset' => $i * 10,
-                        'isLast' => ($i + 1) * 10 >= $params['total'],
-                        'exportType' => 3,
-                        'downloadLogId' => $params['downloadLogId'] ?? 0
-                    ];
-
-                    $header = ['id' => 'ID', 'name' => '姓名', 'phone' => '电话', 'email' => '邮箱',
-                        'country' => '国家', 'address' => '地址', 'company' => '公司'];
-                    ZExcel::export($header, $data, $extra);
-
-                    $i++;
-                }, 'id');
-            }, function ($query) {
-                return $query->offset(0)->limit(1)->get()->toArray();
-            });
-
-        if ($exportType) return true;
-
-        return $this->respSuccess($data);
     }
 
     public function bigDataExport2(Request $request)

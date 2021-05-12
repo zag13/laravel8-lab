@@ -21,6 +21,13 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class ZExcel
 {
+    static protected $type = [
+        1,  // 输出到浏览器
+        2,  // 异步下载至服务器
+        3,  // 分步数据导出 单例模式
+        4,  // 分步数据导出 appendWrite
+    ];
+
     /**
      * 通过 url 读取 excel 内容
      * @param $fileUrl
@@ -89,7 +96,7 @@ class ZExcel
     public static function add2Queue($params)
     {
         $exportType = $params['exportType'] ?? null;
-        if (php_sapi_name() == 'cli' || !in_array($exportType, config('appointment.exportType.local'))) return;
+        if (php_sapi_name() == 'cli' || $exportType === 1) return;
 
         DB::beginTransaction();
         try {
@@ -135,35 +142,29 @@ class ZExcel
     {
         // 重新格式化参数
         $params = [
-            'exportType' => $extra['exportType'] ?? 1,      // ‼️
+            'exportType' => $extra['exportType'] ?? 1,
             'fileName' => $extra['fileName'] ?? '默认文件名',
             'fileType' => $extra['fileType'] ?? 'Csv'
         ];
 
-        $exportType = array_reduce(config('appointment.exportType'), 'array_merge', []);
-        if (!in_array($params['exportType'], $exportType)) trigger_error('导出类型不合法');
-        if (in_array($params['exportType'], config('appointment.exportType.browser')) && php_sapi_name() == 'cli') trigger_error('应当在在浏览器环境下运行');
-        if (in_array($params['exportType'], config('appointment.exportType.local')) && php_sapi_name() != 'cli') trigger_error('应当在在命令行环境下运行');
+        if (!in_array($params['exportType'], self::$type)) trigger_error('导出类型不合法');
+        if (php_sapi_name() == 'cli' && $params['exportType'] == 1) trigger_error('应当在在浏览器环境下运行');
+        if (php_sapi_name() != 'cli' && $params['exportType'] != 1) trigger_error('应当在在命令行环境下运行');
 
         switch ($params['exportType']) {
-            // 导出至浏览器
             case 1:
                 self::export2Browser($header, $data, $params);
                 break;
-            // 导出至服务器
             case 2:
                 return self::export2Local($header, $data, $params);
-            // 单例模式
             case 3:
-            case 4:
                 $params = array_merge($params, [
-                    'downloadLogId' => $extra['downloadLogId'] ?? 0,
+                    'scene' => 'singleton',
                     'offset' => $extra['offset'] ?? 0,
-                    'isLast' => $extra['isLast'] ?? true
+                    'limit' => $extra['limit'] ?? 300
                 ]);
-                return self::singleton($header, $data, $params);
-            // 追加写
-            case 6:
+                return self::export2Local($header, $data, $params);
+            case 4:
                 $params = array_merge($params, [
                     'downloadLogId' => $extra['downloadLogId'] ?? 0,
                     'offset' => $extra['offset'] ?? 0,
@@ -202,15 +203,23 @@ class ZExcel
      * 下载到服务器
      * @param $header
      * @param $data
-     * @param $fileName
-     * @param $fileType
+     * @param array $extra
+     * @return array|bool
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
     private static function export2Local($header, $data, array $extra = [])
     {
+        $params = [
+            'offset' => $extra['offset'] ?? 0,
+            'scene' => $extra['scene'] ?? 'basic'
+        ];
+
+        $spreadsheet = self::exportBasic($header, $data, $params);
+
+        if ($params['scene'] == 'singleton' && count($data) == $extra['limit']) return true;
+
         $fileName = $extra['fileName'];
         $fileType = $extra['fileType'];
-
-        $spreadsheet = self::exportBasic($header, $data);
 
         $fileInfo = self::save2File($spreadsheet, $fileType);
 
@@ -222,45 +231,6 @@ class ZExcel
             'fileSize' => $fileInfo['fileSize'],
             'fileLink' => $fileInfo['filePath']
         ];
-    }
-
-    /**
-     * 单例模式
-     * @param $header
-     * @param $data
-     * @param array $extra
-     * @return bool|\Illuminate\Http\JsonResponse
-     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
-     */
-    private static function singleton($header, $data, array $extra = [])
-    {
-        $downloadLogId = $extra['downloadLogId'];
-        DownloadLog::findOrFail($downloadLogId, ['id'])->toArray();
-
-        $params['offset'] = $extra['offset'];
-        $spreadsheet = self::singletonBasic($header, $data, $params);
-
-        if (!$extra['isLast']) return true;
-
-        $fileName = $extra['fileName'];
-        $fileType = $extra['fileType'];
-        $fileInfo = self::save2File($spreadsheet, $fileType);
-
-        $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet);
-
-        DownloadLog::where('id', '=', $downloadLogId)
-            ->update([
-                'file_name' => $fileName,
-                'file_type' => $fileType,
-                'file_size' => $fileInfo['fileSize'],
-                'file_link' => $fileInfo['filePath'],
-                'status' => 1
-            ]);
-
-        // 由于 chunkById 不能自定义返回，只能出此下策。 淦，队列认为执行失败！！！
-        // throw new \Exception('加入下载列表成功', 10000);
-        return true;
     }
 
     // 利用 追加写 和 total 的导出
@@ -335,6 +305,7 @@ class ZExcel
      * @param $spreadsheet
      * @param $fileType
      * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
     private static function save2File($spreadsheet, $fileType)
     {
@@ -362,47 +333,20 @@ class ZExcel
      * 导出基本设置
      * @param $header
      * @param $data
+     * @param array $extra
      * @return Spreadsheet
      */
-    private static function exportBasic($header, $data)
+    private static function exportBasic($header, $data, $extra = [])
     {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
+        $scene = $extra['scene'] ?? 'basic';
+        $offset = $extra['offset'] ?? 0;
 
-        $col = 1;
-        foreach ($header as $value) {
-            $sheet->setTitle('工作表格1');
-            $sheet->setCellValueByColumnAndRow($col, 1, $value);
-            $col++;
+        if ($scene == 'singleton') {
+            $spreadsheet = SpreadsheetSingleton::getInstance();
+        } else {
+            $spreadsheet = new Spreadsheet();
         }
-        unset($col);
 
-        $row = 2;
-        $header_key = array_keys($header);
-        foreach ($data as $cols) {
-            for ($col = 1; $col <= count($cols); $col++) {
-                $sheet->setCellValueByColumnAndRow($col, $row, $cols[$header_key[$col - 1]]);
-            }
-            $row++;
-        }
-        unset($row);
-
-        return $spreadsheet;
-    }
-
-    /**
-     * 单例导出基本设置
-     * 这种利用单例模式将结果临时缓存起来，一定程度上减少了数据库和内存压力，但还可以继续优化
-     * @param $header
-     * @param $data
-     * @param $extra
-     * @return Spreadsheet
-     */
-    private static function singletonBasic($header, $data, $extra)
-    {
-        $offset = $extra['offset'];
-
-        $spreadsheet = SpreadsheetSingleton::getInstance();
         $sheet = $spreadsheet->getActiveSheet();
 
         if ($offset == 0) {
