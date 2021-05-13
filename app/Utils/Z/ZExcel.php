@@ -22,10 +22,14 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 class ZExcel
 {
     static protected $type = [
-        1,  // 输出到浏览器
-        2,  // 异步下载至服务器
-        3,  // 分步数据导出 单例模式
-        4,  // 分步数据导出 appendWrite
+        'browser' => [
+            1   // 输出到浏览器
+        ],
+        'file' => [
+            2,  // 异步下载至服务器
+            3,  // 分步数据导出 单例模式
+            4,  // 分步数据导出 appendWrite
+        ]
     ];
 
     /**
@@ -96,7 +100,7 @@ class ZExcel
     public static function add2Queue($params)
     {
         $exportType = $params['exportType'] ?? null;
-        if (php_sapi_name() == 'cli' || $exportType === 1) return;
+        if (php_sapi_name() == 'cli' || !in_array($exportType, self::$type['file'])) return;
 
         DB::beginTransaction();
         try {
@@ -121,12 +125,6 @@ class ZExcel
         }
         DB::commit();
 
-        // send 方法返回前端后，后续代码依旧运行，所以要在控制器强制返回而不是使用 send 方法
-        /*return response()->json([
-            'code' => 10000,
-            'msg' => '加入下载列表成功'
-        ]);*/
-        // 算了，这种方法感觉挺爽的
         throw new \Exception('加入下载列表成功', '10000');
     }
 
@@ -147,9 +145,10 @@ class ZExcel
             'fileType' => $extra['fileType'] ?? 'Csv'
         ];
 
-        if (!in_array($params['exportType'], self::$type)) trigger_error('导出类型不合法');
-        if (php_sapi_name() == 'cli' && $params['exportType'] == 1) trigger_error('应当在在浏览器环境下运行');
-        if (php_sapi_name() != 'cli' && $params['exportType'] != 1) trigger_error('应当在在命令行环境下运行');
+        $legalType = array_reduce(self::$type, 'array_merge', []);
+        if (!in_array($params['exportType'], $legalType)) trigger_error('导出类型不合法');
+        if (in_array($params['exportType'], self::$type['browser']) && php_sapi_name() == 'cli') trigger_error('应当在在浏览器环境下运行');
+        if (in_array($params['exportType'], self::$type['file']) && php_sapi_name() != 'cli') trigger_error('应当在在命令行环境下运行');
 
         switch ($params['exportType']) {
             case 1:
@@ -236,66 +235,13 @@ class ZExcel
     // 利用 追加写 和 total 的导出
     private static function appendWrite($header, $data, array $extra = [])
     {
-        $downloadLogId = $extra['downloadLogId'];
-        $download = DownloadLog::findOrFail($downloadLogId, ['file_name', 'file_type', 'file_link'])->toArray();
-
+        $fileLink = $extra['file_link'];
         // 对已有 excel 文件进行追加写
-        if ($download['file_link']) {
-            $fileType = $download['file_type'];
-            $filePath = storage_path('app/') . $download['file_link'];
-
-            if (!is_file($filePath)) trigger_error('文件不存在');
-
-            // FIXME 相当于重新生成，不是追加写
-            $reader = IOFactory::createReader(ucfirst(strtolower($fileType)));
-            $spreadsheet = $reader->load($filePath);
-            $sheet = $spreadsheet->getActiveSheet();
-
-            $row = $extra['offset'] + 2;
-            $header_key = array_keys($header);
-            foreach ($data as $cols) {
-                for ($col = 1; $col <= count($cols); $col++) {
-                    $sheet->setCellValueByColumnAndRow($col, $row, $cols[$header_key[$col - 1]]);
-                }
-                $row++;
-            }
-            unset($row);
-
-            $writer = IOFactory::createWriter($spreadsheet, $fileType);
-            $writer->save($filePath);
-            $spreadsheet->disconnectWorksheets();
-            unset($spreadsheet, $writer);
-
-            if (!isset($extra['isLast'])) return false;
-
-            $fileSize = Storage::size($download['file_link']);
-
-            DownloadLog::where('id', '=', $extra['downloadLogId'])
-                ->update([
-                    'file_size' => $fileSize,
-                    'status' => 1
-                ]);
-
+        if ($fileLink) {
             return true;
         }
 
         // 首次生成 excel 文件
-        $spreadsheet = self::exportBasic($header, $data);
-
-        $fileName = $extra['fileName'];
-        $fileType = $extra['fileType'];
-        $fileInfo = self::save2File($spreadsheet, $fileType);
-
-        $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet);
-
-        DownloadLog::where('id', '=', $downloadLogId)
-            ->update([
-                'file_name' => $fileName,
-                'file_type' => $fileType,
-                'file_link' => $fileInfo['filePath'],
-                'status' => 2
-            ]);
 
         return true;
     }

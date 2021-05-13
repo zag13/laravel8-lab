@@ -75,6 +75,8 @@ class ExportJob implements ShouldQueue
         $params = (new Request())->merge($params);
         $res = (new $className)->$actionName($params);
 
+        if (!isset($res['fileLink'])) throw new \Exception('导出失败：' . json_encode($res));
+
         $data = [
             'file_name' => $res['fileName'],
             'file_type' => $res['fileType'],
@@ -104,6 +106,9 @@ class ExportJob implements ShouldQueue
 
             $params = (new Request())->merge($params);
             $res = (new $className)->$actionName($params);
+
+            $i++;
+            usleep(1000);
         } while ($res === true);
 
         if (!isset($res['fileLink'])) throw new \Exception('导出失败：' . json_encode($res));
