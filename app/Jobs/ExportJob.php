@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Auth;
 /*
  * 队列中不建议使用单例模式，因为是常驻内存的
  * 当前调用命令为 php artisan queue:listen --queue=ExportJob
- * 淦，不仅仅是单例模式其它控制器方法也是会缓存的
  */
 
 class ExportJob implements ShouldQueue
@@ -62,6 +61,17 @@ class ExportJob implements ShouldQueue
     }
 
     /**
+     * Handle a job failure.
+     *
+     * @param \Throwable $throwable
+     * @return void
+     */
+    public function failed(\Throwable $throwable)
+    {
+        $this->downloadLog->update(['status' => 3, 'error_message' => $throwable->getMessage()]);
+    }
+
+    /**
      * 异步导出 限制1000条
      * @param $className
      * @param $actionName
@@ -98,9 +108,10 @@ class ExportJob implements ShouldQueue
     private function loopCall($className, $actionName, array $params = [])
     {
         $i = 0;
-        $defaultLimit = $params['defaultLimit'] ?? 300;
+        $defaultLimit = $params['defaultLimit'] ?? 500;
 
         do {
+            if (is_object($params)) $params = $params->all();
             $params['offset'] = $i * $defaultLimit;
             $params['limit'] = $defaultLimit;
 

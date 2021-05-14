@@ -19,7 +19,7 @@ class DownloadLog extends Model
     protected $fillable = [
         'class_name', 'action_name', 'params',
         'file_name', 'file_type', 'file_size', 'file_link',
-        'creator_id', 'creator_name', 'status'
+        'error_message', 'creator_id', 'creator_name', 'status'
     ];
 
     protected $casts = [
