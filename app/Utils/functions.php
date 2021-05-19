@@ -74,11 +74,12 @@ if (!function_exists('tree2list')) {
      * 树状结构转列表结构
      * @param        $tree
      * @param string $child
+     * @param array $list
      * @return array
      */
-    function tree2list($tree, $child = 'children'): array
+    function tree2list2($tree, $child = 'children', $list = []): array
     {
-        if (!isset($list)) static $list = [];
+        if (empty($list)) $list = [];
 
         foreach ($tree as $branch) {
             $tmp = $branch;
@@ -86,7 +87,7 @@ if (!function_exists('tree2list')) {
             $list[] = $tmp;
 
             if (isset($branch[$child]) && !empty($branch[$child])) {
-                tree2list($branch[$child]);
+                $list = tree2list2($branch[$child], $child, $list);
             }
         }
 
