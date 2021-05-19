@@ -288,7 +288,7 @@ class ZExcel
         $offset = $extra['offset'] ?? 0;
 
         if ($scene == 'singleton') {
-            $spreadsheet = SpreadsheetSingleton::getInstance();
+            $spreadsheet = SpreadsheetSingleton::getInstance($offset);
         } else {
             $spreadsheet = new Spreadsheet();
         }

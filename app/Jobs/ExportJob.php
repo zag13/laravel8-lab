@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 
 /*
  * 队列中不建议使用单例模式，因为是常驻内存的
- * 当前调用命令为 php artisan queue:listen --queue=ExportJob
+ * 当前调用命令为 php artisan queue:work --queue=ExportJob
  */
 
 class ExportJob implements ShouldQueue

@@ -19,9 +19,9 @@ final class SpreadsheetSingleton
     /**
      * gets the instance via lazy initialization (created on first usage)
      */
-    public static function getInstance(): Spreadsheet
+    public static function getInstance($offset = 0): Spreadsheet
     {
-        if (static::$instance === null) {
+        if ($offset == 0 || static::$instance === null) {
             static::$instance = new Spreadsheet();
         }
 
