@@ -18,6 +18,13 @@ use ReflectionParameter;
 
 class Container implements ArrayAccess
 {
+    /**
+     * The current globally available container (if any).
+     *
+     * @var static
+     */
+    protected static $instance;
+
     private $s = [];
 
     /**
@@ -75,7 +82,7 @@ class Container implements ArrayAccess
 
         foreach ($dependencies as $dependency) {
             $className = Util::getParameterClassName($dependency);
-            
+
             $result = is_null($className)
                 ? $this->resolvePrimitive($dependency)
                 : $this->build($className);
@@ -105,6 +112,20 @@ class Container implements ArrayAccess
         }
 
         throw new Exception("Unresolvable dependency resolving [$parameter] in class {$parameter->getDeclaringClass()->getName()}");
+    }
+
+    /**
+     * Get the globally available instance of the container.
+     *
+     * @return static
+     */
+    public static function getInstance()
+    {
+        if (is_null(static::$instance)) {
+            static::$instance = new static();
+        }
+
+        return static::$instance;
     }
 
     /**
