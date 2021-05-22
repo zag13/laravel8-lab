@@ -1,13 +1,14 @@
 <?php
 
+use App\Http\Controllers\Analysis\ContainerController;
 use App\Http\Controllers\System\AuthController;
+use App\Http\Controllers\System\PermissionController;
 use App\Http\Controllers\Test\ESController;
 use App\Http\Controllers\Test\ExcelController;
 use App\Http\Controllers\Test\MongoController;
 use App\Http\Controllers\Test\RedisController;
 use App\Http\Controllers\Test\SqlController;
 use App\Http\Controllers\Test\TestController;
-use App\Http\Controllers\System\PermissionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -54,6 +55,15 @@ Route::group([
     Route::get('user', [TestController::class, 'user']);
     Route::get('collect', [TestController::class, 'collect']);
     Route::get('broadcast', [TestController::class, 'broadcast']);
+    Route::get('test', [TestController::class, 'test']);
+});
+
+
+// 'prefix' => 'analysis'
+Route::group([
+    'prefix' => 'analysis'
+], function () {
+    Route::get('container', [ContainerController::class, 'test']);
 });
 
 
@@ -88,7 +98,7 @@ Route::group([
     Route::get('{uri}', function ($uri) {
         $controller = new SqlController();
         if (!method_exists($controller, $uri)) throw new Exception('not found');
-        return (new SqlController())->$uri();
+        return $controller->$uri();
     });
 });
 
