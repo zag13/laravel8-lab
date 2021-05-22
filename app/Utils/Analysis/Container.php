@@ -9,13 +9,14 @@
 
 namespace App\Utils\Analysis;
 
+use ArrayAccess;
 use Closure;
 use Exception;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionParameter;
 
-class Container
+class Container implements ArrayAccess
 {
     private $s = [];
 
@@ -105,6 +106,51 @@ class Container
     }
 
     /**
+     * Determine if a given offset exists.
+     *
+     * @param string $key
+     * @return bool
+     */
+    public function offsetExists($key)
+    {
+        return isset($this->s[$key]);
+    }
+
+    /**
+     * Get the value at a given offset.
+     *
+     * @param string $key
+     * @return mixed
+     */
+    public function offsetGet($key)
+    {
+        return $this->build($this->s[$key]);
+    }
+
+    /**
+     * Set the value at a given offset.
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return void
+     */
+    public function offsetSet($key, $value)
+    {
+        return $this->s[$key] = $value;
+    }
+
+    /**
+     * Unset the value at a given offset.
+     *
+     * @param string $key
+     * @return void
+     */
+    public function offsetUnset($key)
+    {
+        unset($this->s[$key]);
+    }
+
+    /**
      * Dynamically access container services.
      *
      * @param string $key
@@ -112,7 +158,7 @@ class Container
      */
     public function __get($key)
     {
-        return $this->build($this->s[$key]);
+        return $this[$key];
     }
 
     /**
@@ -124,6 +170,6 @@ class Container
      */
     public function __set($key, $value)
     {
-        $this->s[$key] = $value;
+        $this[$key] = $value;
     }
 }
