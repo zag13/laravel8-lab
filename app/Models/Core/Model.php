@@ -9,6 +9,7 @@
 
 namespace App\Models\Core;
 
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model as CModel;
 
 /**
@@ -23,5 +24,16 @@ class Model extends CModel
     {
         // 权限校验
         return $query->whereIn();
+    }
+
+    /**
+     * Prepare a date for array / JSON serialization.
+     *
+     * @param  \DateTimeInterface  $date
+     * @return string
+     */
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s');
     }
 }
