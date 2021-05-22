@@ -74,9 +74,11 @@ class Container implements ArrayAccess
         $results = [];
 
         foreach ($dependencies as $dependency) {
-            $result = is_null(Util::getParameterClassName($dependency))
+            $className = Util::getParameterClassName($dependency);
+            
+            $result = is_null($className)
                 ? $this->resolvePrimitive($dependency)
-                : $this->build($dependency->getType()->getName());
+                : $this->build($className);
 
             if ($dependency->isVariadic()) {
                 $results = array_merge($results, $result);
