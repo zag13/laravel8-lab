@@ -14,8 +14,8 @@ use App\Http\Controllers\Core\Controller;
 use App\Services\Analysis\Container\A;
 use App\Services\Analysis\Container\B;
 use App\Services\Analysis\Container\C;
-use App\Utils\Analysis\Container;
-//use Illuminate\Container\Container;
+use App\Utils\Analysis\Container\ContainerI;
+use Illuminate\Container\Container as LaraContainer;
 
 class ContainerController extends Controller
 {
@@ -40,7 +40,7 @@ class ContainerController extends Controller
          * 容器初级使用
          * 手动注入所需要的依赖
          */
-//        $container = new Container();
+//        $container = new ContainerI();
 //        $container->a = function () {
 //            return new A();
 //        };
@@ -52,25 +52,26 @@ class ContainerController extends Controller
 //        };
 //        $c = $container->c;
 //        $c->doSomething();
+    }
 
-        /**
-         * 容器高级使用
-         *
-         */
-//        $container = new Container();
-//        $container->b = 'App\Services\Analysis\Container\B';
-//        $container->c = function ($container) {
-//            return new C($container->b);
-//        };
-//        $c = $container->c;
-//
-//        $c->doSomething();
-
-        $di = new Container();
+    public function DIY()
+    {
+        $di = new ContainerI();
         $di->c = 'App\Services\Analysis\Container\C';
         $c = $di->c;
 
         print_r($c);
         $c->doSomething();
     }
+
+    public function laraContainer()
+    {
+        $di = LaraContainer::getInstance();
+        $di->bind('App\Services\Analysis\Container\C');
+        $c = $di->make('App\Services\Analysis\Container\C');
+
+        print_r($c);
+        $c->doSomething();
+    }
+
 }

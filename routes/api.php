@@ -63,7 +63,13 @@ Route::group([
 Route::group([
     'prefix' => 'analysis'
 ], function () {
-    Route::get('container', [ContainerController::class, 'test']);
+    Route::group([
+        'prefix' => 'container'
+    ], function () {
+        Route::get('test', [ContainerController::class, 'test']);
+        Route::get('diy', [ContainerController::class, 'DIY']);
+        Route::get('laraContainer', [ContainerController::class, 'laraContainer']);
+    });
 });
 
 

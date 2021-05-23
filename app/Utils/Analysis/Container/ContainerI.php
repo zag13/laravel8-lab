@@ -7,7 +7,7 @@
  */
 
 
-namespace App\Utils\Analysis;
+namespace App\Utils\Analysis\Container;
 
 use ArrayAccess;
 use Closure;
@@ -15,9 +15,8 @@ use Exception;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionParameter;
-use TypeError;
 
-class Container implements ArrayAccess
+class ContainerI implements ArrayAccess
 {
     /**
      * The current globally available container (if any).
@@ -26,60 +25,7 @@ class Container implements ArrayAccess
      */
     protected static $instance;
 
-    /**
-     * An array of the types that have been resolved.
-     *
-     * @var bool[]
-     */
-    protected $resolved = [];
-
-    /**
-     * The container's bindings.
-     *
-     * @var array[]
-     */
-    protected $bindings = [];
-
-    /**
-     * The container's shared instances.
-     *
-     * @var object[]
-     */
-    protected $instances = [];
-
-    /**
-     * The registered type aliases.
-     *
-     * @var string[]
-     */
-    protected $aliases = [];
-
     private $s = [];
-
-
-    /**
-     * Determine if the given abstract type has been bound.
-     *
-     * @param string $abstract
-     * @return bool
-     */
-    public function bound($abstract)
-    {
-        return isset($this->bindings[$abstract]) ||
-            isset($this->instances[$abstract]) ||
-            $this->isAlias($abstract);
-    }
-
-    /**
-     * Determine if a given string is an alias.
-     *
-     * @param string $name
-     * @return bool
-     */
-    public function isAlias($name)
-    {
-        return isset($this->aliases[$name]);
-    }
 
     /**
      * Instantiate a concrete instance of the given type.
@@ -168,13 +114,6 @@ class Container implements ArrayAccess
         throw new Exception("Unresolvable dependency resolving [$parameter] in class {$parameter->getDeclaringClass()->getName()}");
     }
 
-    public function getAlias($abstract)
-    {
-        return isset($this->aliases[$abstract])
-            ? $this->getAlias($this->aliases[$abstract])
-            : $abstract;
-    }
-
     /**
      * Get the globally available instance of the container.
      *
@@ -197,7 +136,7 @@ class Container implements ArrayAccess
      */
     public function offsetExists($key)
     {
-        return $this->bound($key);
+        return isset($this->s[$key]);
     }
 
     /**
@@ -231,7 +170,7 @@ class Container implements ArrayAccess
      */
     public function offsetUnset($key)
     {
-        unset($this->bindings[$key], $this->instances[$key], $this->resolved[$key]);
+        unset($this->s[$key]);
     }
 
     /**

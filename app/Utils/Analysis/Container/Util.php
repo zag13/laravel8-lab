@@ -7,7 +7,7 @@
  */
 
 
-namespace App\Utils\Analysis;
+namespace App\Utils\Analysis\Container;
 
 use ReflectionNamedType;
 
