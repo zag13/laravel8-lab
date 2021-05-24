@@ -11,6 +11,12 @@ namespace Tests\Feature\Analysis\Container;
 
 
 use App\Jobs\ExportJob;
+use App\Services\Analysis\Container\A;
+use App\Services\Analysis\Container\B;
+use App\Services\Analysis\Container\C;
+use App\Services\Analysis\Container\Electricity;
+use App\Services\Analysis\Container\Petrol;
+use App\Services\Analysis\Container\Tesla;
 use Illuminate\Container\Container as LaraContainer;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use stdClass;
@@ -22,10 +28,12 @@ class BindTest extends TestCase
     {
         $container = new LaraContainer();
 
-        // 绑定自身 ???
+        // FIXME 绑定自身 ???
         /*$container->bind('Tests\Feature\Analysis\Container\BindTest', null);
         $thisZ = $container->make('Tests\Feature\Analysis\Container\BindTest');
 
+        $a = ($this instanceof TestCase);
+        $b = ($thisZ instanceof TestCase);
         $this->assertSame($this, $thisZ);*/
 
         // 绑定闭包
@@ -62,10 +70,132 @@ class BindTest extends TestCase
     {
         $container = new LaraContainer();
 
+        // FIXME 同上
         $container->singleton('c', null);
 
         $this->assertEquals(['name' => 'PHP'], $container->makeWith('c', ['name' => 'PHP']));
         $this->assertEquals(['name' => 'Golang'], $container->makeWith('c', ['name' => 'Golang']));
+    }
 
+    public function testInstance()
+    {
+        $container = new LaraContainer();
+
+        $b = new B(new A());
+
+        $container->instance('B', $b);
+
+        $this->assertEquals($b, $container->make('B'));
+    }
+
+    public function testContext()
+    {
+        $container = new LaraContainer();
+
+        $container->when('App\Services\Analysis\Container\Petrol')
+            ->needs('App\Services\Analysis\Container\Fuel')
+            ->give(function ($container) {
+                $container->php = '是世界上最好的语言';
+            });
+
+        $container->when('App\Services\Analysis\Container\Electricity')
+            ->needs('App\Services\Analysis\Container\Fuel')
+            ->give(function ($container) {
+                $container->golang = '哈哈哈哈';
+            });
+
+        $this->assertEquals('?', '?');
+    }
+
+    public function testArrayAccess()
+    {
+        $container = new LaraContainer();
+
+        $container[ExportJob::class] = ShouldQueue::class;
+
+        $this->assertTrue(isset($container[ExportJob::class]));
+
+        $this->assertEquals(ShouldQueue::class, $container[ExportJob::class]);
+
+        $this->assertFalse(isset($container['something']));
+        unset($container['something']);
+        $this->assertFalse(isset($container['something']));
+    }
+
+    public function testTag()
+    {
+        $container = new LaraContainer();
+
+        $container->tag('App\Services\Analysis\Container\C', ['C', 'B']);
+        $container->tag('App\Services\Analysis\Container\B', ['B']);
+
+        $this->assertCount(2, $container->tagged('B'));
+        $this->assertCount(1, $container->tagged('C'));
+
+//        $this->assertInstanceOf('App\Services\Analysis\Container\C', 'TODO');
+//        $this->assertInstanceOf('App\Services\Analysis\Container\B', 'TODO');
+    }
+
+    public function testExtend()
+    {
+        $container = new LaraContainer();
+
+        $container->bind('lang', function () {
+            $obj = new stdClass();
+            $obj->php = '世界上最好的语言!';
+            $obj->c = '呵呵';
+            return $obj;
+        });
+
+        $obj = new stdClass();
+        $obj->php = '虾扯蛋!';
+
+        $container->instance('lang', $obj);  // 之前的 lang 被覆盖了
+
+        $container->extend('lang', function ($obj) {
+            $obj->golang = '小弟后来的，不敢说话';
+            return $obj;
+        });
+
+        $container->extend('lang', function ($obj) {
+            $obj->cpp = '哈哈';
+            return $obj;
+        });
+
+        $this->assertEquals('虾扯蛋!', $container['lang']->php);
+        $this->assertEquals('小弟后来的，不敢说话', $container['lang']->golang);
+        $this->assertEquals('哈哈', $container['lang']->cpp);
+    }
+
+    public function testRebinding()
+    {
+        $container = new LaraContainer();
+
+        $container->bind('fuel', function () {
+            return new Electricity();
+        });
+
+        // FIXME shared 有什么用？
+        // 去掉后，即使 car 已实例化其成员变量也会发生变化
+        // 不去吧，又只有重新绑定
+        $container->bind('car', function ($container) {
+            return new Tesla($container['fuel']);
+        }, true);
+
+        $this->assertEquals(1.58 * 3, $container['car']->reFuel(3));
+
+        $container->bind('fuel', function () {
+            return new Petrol();
+        });
+
+        $this->assertEquals(1.58 * 3, $container['car']->reFuel(3));
+
+        $container->bind('car', function ($container) {
+            return new Tesla($container->rebinding('fuel', function ($container, $fuel) {
+                $container['car']->setFuel($fuel);
+            }));
+        });
+
+        $this->assertEquals(6.67 * 3, $container['car']->reFuel(3));
     }
 }
