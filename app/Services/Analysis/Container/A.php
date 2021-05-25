@@ -14,7 +14,7 @@ class A
 {
     public $lang;
 
-    public function __construct($lang = null)
+    public function __construct($lang = 'php')
     {
         $this->lang = $lang;
     }
@@ -22,10 +22,5 @@ class A
     public function doSomething()
     {
         echo __METHOD__ . PHP_EOL;
-    }
-
-    public static function doNot()
-    {
-        return __METHOD__;
     }
 }

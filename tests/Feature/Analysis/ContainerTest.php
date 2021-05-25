@@ -7,7 +7,7 @@
  */
 
 
-namespace Tests\Feature\Analysis\Container;
+namespace Tests\Feature\Analysis;
 
 
 use App\Jobs\ExportJob;
@@ -28,13 +28,10 @@ class ContainerTest extends TestCase
     {
         $container = new LaraContainer();
 
-        // FIXME 绑定自身 ???
-        /*$container->bind('Tests\Feature\Analysis\Container\ContainerTest', null);
-        $thisZ = $container->make('Tests\Feature\Analysis\Container\ContainerTest');
+        $container->bind('App\Services\Analysis\Container\A');
 
-        $a = ($this instanceof TestCase);
-        $b = ($thisZ instanceof TestCase);
-        $this->assertSame($this, $thisZ);*/
+        $this->assertEquals('PHP',
+            $container->makeWith('App\Services\Analysis\Container\A', ['lang' => 'PHP'])->lang);
 
         // 绑定闭包
         $class = new stdClass();
@@ -70,11 +67,14 @@ class ContainerTest extends TestCase
     {
         $container = new LaraContainer();
 
-        // FIXME 同上
-        $container->singleton('c', null);
+        $container->singleton('App\Services\Analysis\Container\A');
 
-        $this->assertEquals(['name' => 'PHP'], $container->makeWith('c', ['name' => 'PHP']));
-        $this->assertEquals(['name' => 'Golang'], $container->makeWith('c', ['name' => 'Golang']));
+        $a = $container->makeWith('App\Services\Analysis\Container\A', ['lang' => 'PHP']);
+
+        $this->assertEquals('PHP',
+            $container->makeWith('App\Services\Analysis\Container\A', ['lang' => 'PHP'])->lang);
+        $this->assertEquals('Golang',
+            $container->makeWith('App\Services\Analysis\Container\A', ['lang' => 'Golang'])->lang);
     }
 
     public function testInstance()
@@ -209,10 +209,10 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf('App\Services\Analysis\Container\A', $c->b->a);
 
         $a = $container->make('App\Services\Analysis\Container\a');
-        $this->assertEquals(null, $a->lang);
+        $this->assertEquals('php', $a->lang);
     }
 
-    public function testCallWithDependencies()
+    public function testCallClosure()
     {
         $container = new LaraContainer();
 
@@ -228,22 +228,24 @@ class ContainerTest extends TestCase
     {
         $container = new LaraContainer();
 
-        $this->assertEquals('App\Services\Analysis\Container\A::doNot',
-            $container->call(A::class . '@doNot'));
-        $this->assertEquals('App\Services\Analysis\Container\A::doNot',
-            $container->call(A::class . '::doNot'));
-        $this->assertEquals('App\Services\Analysis\Container\A::doNot',
-            $container->call([A::class, 'doNot']));
-        $this->assertEquals('App\Services\Analysis\Container\A::doNot',
-            $container->call(A::doNot()));
+        $this->assertEquals('php',
+            $container->call(B::class . '@getBestLangS'));
+        $this->assertEquals('php',
+            $container->call(B::class . '::getBestLangS'));
+        $this->assertEquals('golang',
+            $container->call([B::class, 'getBestLangS'], ['a' => new A('golang')]));
     }
 
     public function testCallNotStatic()
     {
         $container = new LaraContainer();
 
-        $this->assertEquals('App\Services\Analysis\Container\A::doSomething',
-            $container->call([A::class, 'doSomething']));
+        $this->assertEquals('php',
+            $container->call([$container->make(B::class), 'getBestLang']));
+        $this->assertEquals('php',
+            $container->call(B::class . '@getBestLang'));
+        $this->assertEquals('golang',
+            $container->call(B::class . '@getBestLang', ['a' => new A('golang')]));
     }
 
     public function testBindMethod()
@@ -336,5 +338,30 @@ class ContainerTest extends TestCase
         $this->assertEmpty($container->getBindings());
         $this->assertFalse($container->isShared('lang'));
         $this->assertFalse($container->isAlias('language'));
+    }
+
+    public function testReboundListeners()
+    {
+        unset($_SERVER['__test.rebind']);
+
+        $container = new LaraContainer();
+
+        $container->rebinding('lang', function () {
+            $_SERVER['__test.rebind'] = true;
+        });
+
+        $container->bind('lang', function () {
+
+        });
+
+        $this->assertFalse(isset($_SERVER['__test.rebind']));
+
+        $container->make('lang');
+
+        $container->bind('lang', function () {
+
+        });
+
+        $this->assertTrue($_SERVER['__test.rebind']);
     }
 }

@@ -25,4 +25,14 @@ class B
 
         echo __METHOD__ . PHP_EOL;
     }
+
+    public function getBestLang(A $a)
+    {
+        return $a->lang;
+    }
+
+    public static function getBestLangS(A $a)
+    {
+        return $a->lang;
+    }
 }
