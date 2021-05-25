@@ -12,8 +12,20 @@ namespace App\Services\Analysis\Container;
 
 class A
 {
+    public $lang;
+
+    public function __construct($lang = null)
+    {
+        $this->lang = $lang;
+    }
+
     public function doSomething()
     {
         echo __METHOD__ . PHP_EOL;
+    }
+
+    public static function doNot()
+    {
+        return __METHOD__;
     }
 }

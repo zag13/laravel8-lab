@@ -22,15 +22,15 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use stdClass;
 use Tests\TestCase;
 
-class BindTest extends TestCase
+class ContainerTest extends TestCase
 {
     public function testBind()
     {
         $container = new LaraContainer();
 
         // FIXME 绑定自身 ???
-        /*$container->bind('Tests\Feature\Analysis\Container\BindTest', null);
-        $thisZ = $container->make('Tests\Feature\Analysis\Container\BindTest');
+        /*$container->bind('Tests\Feature\Analysis\Container\ContainerTest', null);
+        $thisZ = $container->make('Tests\Feature\Analysis\Container\ContainerTest');
 
         $a = ($this instanceof TestCase);
         $b = ($thisZ instanceof TestCase);
@@ -197,5 +197,79 @@ class BindTest extends TestCase
         });
 
         $this->assertEquals(6.67 * 3, $container['car']->reFuel(3));
+    }
+
+    public function testMake()
+    {
+        $container = new LaraContainer();
+
+        $c = $container->make('App\Services\Analysis\Container\C');
+        $this->assertInstanceOf('App\Services\Analysis\Container\C', $c);
+        $this->assertInstanceOf('App\Services\Analysis\Container\B', $c->b);
+        $this->assertInstanceOf('App\Services\Analysis\Container\A', $c->b->a);
+
+        $a = $container->make('App\Services\Analysis\Container\a');
+        $this->assertEquals(null, $a->lang);
+    }
+
+    public function testCallWithDependencies()
+    {
+        $container = new LaraContainer();
+
+        $result = $container->call(function (stdClass $a, $b = []) {
+            return func_get_args();
+        }, ['b' => 'string']);
+
+        $this->assertInstanceOf('stdClass', $result[0]);
+        $this->assertEquals('string', $result[1]);
+    }
+
+    public function testCallStatic()
+    {
+        $container = new LaraContainer();
+
+        $this->assertEquals('App\Services\Analysis\Container\A::doNot',
+            $container->call(A::class . '@doNot'));
+        $this->assertEquals('App\Services\Analysis\Container\A::doNot',
+            $container->call(A::class . '::doNot'));
+        $this->assertEquals('App\Services\Analysis\Container\A::doNot',
+            $container->call([A::class, 'doNot']));
+        $this->assertEquals('App\Services\Analysis\Container\A::doNot',
+            $container->call(A::doNot()));
+    }
+
+    public function testCallNotStatic()
+    {
+        $container = new LaraContainer();
+
+        $this->assertEquals('App\Services\Analysis\Container\A::doSomething',
+            $container->call([A::class, 'doSomething']));
+    }
+
+    public function testBindMethod()
+    {
+        $container = new LaraContainer();
+
+        $container->bindMethod(A::class . '@test', function () {
+            return 'test';
+        });
+
+        $this->assertEquals('test', $container->call([A::class, 'test']));
+    }
+
+    public function testAlias()
+    {
+        $container = new LaraContainer();
+
+        $container->alias('server', 'a');
+        $container->alias('a', 'b');
+        $container->alias('b', 'c');
+
+        $this->assertEquals('server', $container->getAlias('c'));
+    }
+
+    public function testEvent()
+    {
+
     }
 }

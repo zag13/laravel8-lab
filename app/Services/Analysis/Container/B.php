@@ -12,7 +12,7 @@ namespace App\Services\Analysis\Container;
 
 class B
 {
-    private $a;
+    public $a;
 
     public function __construct(A $z)
     {
