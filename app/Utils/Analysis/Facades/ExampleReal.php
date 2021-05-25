@@ -12,8 +12,8 @@ namespace App\Utils\Analysis\Facades;
 
 class ExampleReal
 {
-    public function sayHello()
+    public function sayWhat($word = 'hello')
     {
-        return 'hello';
+        return $word;
     }
 }

@@ -10,7 +10,6 @@
 namespace App\Utils\Analysis\Facades;
 
 use Exception;
-use Illuminate\Foundation\Application;
 
 abstract class Facade
 {
@@ -40,6 +39,11 @@ abstract class Facade
         throw new Exception('Facade does not implement getFacadeAccessor method.');
     }
 
+    /**
+     * Get the root object behind the facade.
+     *
+     * @return mixed
+     */
     protected static function resolveFacadeInstance($name)
     {
         if (is_object($name)) {

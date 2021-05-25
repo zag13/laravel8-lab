@@ -11,13 +11,12 @@ namespace Tests\Feature\Analysis;
 
 
 use App\Utils\Analysis\Facades\Example;
-use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class FacadeTest extends TestCase
 {
     public function testFacade()
     {
-        $this->assertEquals('hello', Example::sayHello());
+        $this->assertEquals('hello', Example::sayWhat('hello'));
     }
 }
