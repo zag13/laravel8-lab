@@ -14,9 +14,9 @@ class B
 {
     public $a;
 
-    public function __construct(A $z)
+    public function __construct(A $a)
     {
-        $this->a = $z;
+        $this->a = $a;
     }
 
     public function doSomething()

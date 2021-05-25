@@ -216,12 +216,12 @@ class ContainerTest extends TestCase
     {
         $container = new LaraContainer();
 
-        $result = $container->call(function (stdClass $a, $b = []) {
+        $res = $container->call(function (stdClass $a, $b = []) {
             return func_get_args();
         }, ['b' => 'string']);
 
-        $this->assertInstanceOf('stdClass', $result[0]);
-        $this->assertEquals('string', $result[1]);
+        $this->assertInstanceOf('stdClass', $res[0]);
+        $this->assertEquals('string', $res[1]);
     }
 
     public function testCallStatic()
@@ -270,6 +270,71 @@ class ContainerTest extends TestCase
 
     public function testEvent()
     {
+        $container = new LaraContainer();
 
+        $container->alias('stdClass', 'std');
+
+        $container->resolving('std', function ($obj) {
+            $obj->lang = 'PHP';
+        });
+
+        $container->bind('stdClass', function () {
+            return new stdClass();
+        });
+
+        $this->assertEquals('PHP', $container->make('stdClass')->lang);
+    }
+
+    public function testWrap()
+    {
+        $container = new LaraContainer();
+
+        $res = $container->wrap(function (stdClass $a, $b = []) {
+            return func_get_args();
+        }, ['b' => 'string']);
+
+        $this->assertInstanceOf('Closure', $res);
+
+        $res2 = $container->call(function (stdClass $a, $b = []) {
+            return func_get_args();
+        }, ['b' => 'string']);
+
+        $this->assertEquals($res2[0], $res()[0]);
+        $this->assertEquals($res2[1], $res()[1]);
+    }
+
+    public function testFactory()
+    {
+        $container = new LaraContainer();
+
+        $container->bind('lang', function () {
+            return 'PHP';
+        });
+
+        $factory = $container->factory('lang');
+
+        $this->assertEquals($container->make('lang'), $factory());
+    }
+
+    public function testFlush()
+    {
+        $container = new LaraContainer();
+
+        $container->bind('lang', function () {
+            return 'PHP';
+        }, true);
+
+        $container->alias('language', 'lang');
+
+        $this->assertTrue($container->isShared('lang'));
+        $this->assertArrayHasKey('lang', $container->getBindings());
+        $this->assertEquals('language', $container->getAlias('lang'));
+
+        $container->flush();
+
+        $this->assertFalse($container->resolved('lang'));
+        $this->assertEmpty($container->getBindings());
+        $this->assertFalse($container->isShared('lang'));
+        $this->assertFalse($container->isAlias('language'));
     }
 }
