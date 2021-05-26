@@ -2,16 +2,16 @@
 /**
  * Created by PhpStorm
  * User: ZS
- * Date: 2021/5/25
- * Time: 5:56 下午
+ * Date: 2021/5/26
+ * Time: 4:14 下午
  */
 
 
-namespace Tests\Feature\Analysis;
+namespace Tests\Unit\Analysis;
 
 
 use App\Utils\Analysis\Facades\Example;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class FacadeTest extends TestCase
 {

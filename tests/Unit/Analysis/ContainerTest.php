@@ -2,25 +2,24 @@
 /**
  * Created by PhpStorm
  * User: ZS
- * Date: 2021/5/23
- * Time: 5:44 下午
+ * Date: 2021/5/26
+ * Time: 3:57 下午
  */
 
 
-namespace Tests\Feature\Analysis;
+namespace Tests\Unit\Analysis;
 
 
 use App\Jobs\ExportJob;
 use App\Services\Analysis\Container\A;
 use App\Services\Analysis\Container\B;
-use App\Services\Analysis\Container\C;
 use App\Services\Analysis\Container\Electricity;
 use App\Services\Analysis\Container\Petrol;
 use App\Services\Analysis\Container\Tesla;
 use Illuminate\Container\Container as LaraContainer;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use PHPUnit\Framework\TestCase;
 use stdClass;
-use Tests\TestCase;
 
 class ContainerTest extends TestCase
 {
