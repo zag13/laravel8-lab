@@ -34,12 +34,13 @@ class UserEventSubscriber
 
     public function onUserLogin(UserLoginEvent $event)
     {
-        $user = $event->user;
+        /*$user = $event->user;
         $context = [
             'id' => $user['id'],
             'name' => $user['name'],
             'email' => $user['email']
         ];
-        ZLog::channel('login')->info('登录', $context);
+        ZLog::channel('login')->info('登录', $context);*/
+        return $event->user;
     }
 }
