@@ -11,7 +11,10 @@ namespace Tests\Unit\Analysis;
 
 
 use Closure;
+use Illuminate\Http\Request;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Routing\RouteCollection;
+use Illuminate\Routing\UrlGenerator;
 use PHPUnit\Framework\TestCase;
 
 
@@ -57,4 +60,27 @@ class RouteTest extends TestCase
             }));
     }
 
+    /**
+     * 控制器方法的参数绑定
+     * src/Illuminate/Foundation/Http/Kernel.php ==> handle()
+     * ==> sendRequestThroughRouter() ==> Pipeline->then($this->dispatchToRouter())
+     * ==> $this->router->dispatch($request) ==> $this->runRouteWithinStack($route, $request)
+     * ==> $route->run() ==> $this->runController()
+     * ==> src/Illuminate/Routing/ControllerDispatcher.php ==> dispatch()
+     * ==> resolveClassMethodDependencies()
+     * ==> resolveMethodDependencies()
+     *
+     */
+
+
+
+    public function testRedirect()
+    {
+        $url = new UrlGenerator(
+            new RouteCollection(),
+            Request::create('https://github.com')
+        );
+
+        $this->assertEquals('https://github.com/zs368', $url->to('zs368'));
+    }
 }
