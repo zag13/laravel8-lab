@@ -227,6 +227,12 @@ class RedisController extends Controller
 
     }
 
+    // TODO 
+    public function stream()
+    {
+
+    }
+
     public function database()
     {
         /*
