@@ -6,29 +6,43 @@
  * Time: 4:52 下午
  */
 
-if (!function_exists('rrmDir')) {
+if (!function_exists('recursiveDelete')) {
     /**
      * 递归删除目录
-     * @param string $src
-     * @return bool
+     * @param string $dir
+     * @throws Exception
      */
-    function rrmDir($src = '')
+    function recursiveDelete(string $dir = '')
     {
-        if (empty($src)) return true;
+        $whiteList = [
+            storage_path()
+        ];
 
-        $dir = opendir($src);
-        while (false !== ($file = readdir($dir))) {
-            if (($file != '.') && ($file != '..')) {
-                $full = $src . '/' . $file;
-                if (is_dir($full)) {
-                    rrmDir($full);
-                } else {
-                    unlink($full);
-                }
+        $access = false;
+        foreach ($whiteList as $value) {
+            if (strpos($dir, $value) === 0) {
+                $access = true;
+                break;
             }
         }
-        closedir($dir);
-        rmdir($src);
+
+        if ($access === false) throw new Exception($dir . "当前目录不合法");
+
+        if ($handle = opendir($dir)) {
+            while (($file = readdir($handle)) !== false) {
+                if (($file == ".") || ($file == "..")) {
+                    continue;
+                }
+                if (is_dir($dir . '/' . $file)) {
+                    // 递归
+                    recursiveDelete($dir . '/' . $file);
+                } else {
+                    unlink($dir . '/' . $file); // 删除文件
+                }
+            }
+            closedir($handle);
+            rmdir($dir);
+        }
     }
 }
 
