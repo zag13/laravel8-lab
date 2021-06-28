@@ -52,10 +52,11 @@ Route::group([
 //    'middleware' => 'jwt.auth',
     'prefix' => 'test'
 ], function () {
+    Route::get('test', [TestController::class, 'test']);
     Route::get('user', [TestController::class, 'user']);
     Route::get('collect', [TestController::class, 'collect']);
     Route::get('broadcast', [TestController::class, 'broadcast']);
-    Route::get('test', [TestController::class, 'test']);
+    Route::get('storage', [TestController::class, 'storage']);
 });
 
 

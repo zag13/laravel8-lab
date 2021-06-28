@@ -14,9 +14,15 @@ use App\Events\UserSendMessage;
 use App\Http\Controllers\Core\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TestController extends Controller
 {
+    public function test()
+    {
+
+    }
+
     public function user(Request $request)
     {
         $this->validate($request, [
@@ -79,4 +85,11 @@ class TestController extends Controller
         event(new UserSendMessage($user, $message));
     }
 
+    public function storage()
+    {
+        var_dump(storage_path());
+        $res = Storage::deleteDirectory("download/excel/2021-05-02");
+        $res2 = Storage::delete("download/excel/2021-05-01/608cf76c3cd43.csv");
+        var_dump($res, $res2);
+    }
 }
