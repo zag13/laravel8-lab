@@ -11,10 +11,7 @@ namespace App\Http\Controllers\Test;
 
 
 use App\Http\Controllers\Core\Controller;
-use App\Models\Message;
-use App\Models\TestEs;
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Models\DownloadLog;
 
 
 /**
@@ -156,22 +153,18 @@ class SqlController extends Controller
         // 不建议使用关联进行 创建 和 更新 操作
     }
 
-    public function test()
+    // chunk 连表使用
+    public function chunk()
     {
-        $inserted = [
-            [],
-            []
-        ];
-        Message::insert($inserted);
+        DownloadLog::from("download_log", "a")
+            ->leftJoin("failed_jobs as b", "a.id", '=', "b.id")
+            ->selectRaw("a.id as `a.id`, a.class_name, a.file_name, b.uuid, b.queue")
+            ->where("a.id", '<', 4)
+            ->chunkById(1, function ($data) {
+                $data = $data->toArray();
+               var_dump($data);
+            }, "a.id");
     }
 
-    /**
-     * 合并 sql
-     */
-    public function sql1()
-    {
-        $db = TestEs::select([]);
-        return 1;
-    }
 
 }
