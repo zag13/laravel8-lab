@@ -1,22 +1,25 @@
-# 高可用 laravel
+# laravel-example
 
  
 
-laravel 常见拓展
+### laravel 常用拓展
 
 - [x] `tymon/jwt-auth`
 - [x] `spatie/laravel-permission`
 - [x] `phpoffice/phpspreadsheet`
 
-laravel 源码分析
+### laravel 源码分析
 
-- [ ] 容器
+- [x] 容器
+- [x] Facade
+- [ ] ...
 
-php 常见问题解决方案
+### 日常问题解决方案
 
+- [x] 消息推送（webSocket）
 - [x] 数据导出
 
-常用后端技术栈
+### 常用技术栈
 
 - [x] mongodb
 - [x] es

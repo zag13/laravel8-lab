@@ -10,7 +10,7 @@
 namespace App\Http\Controllers\Test;
 
 
-use App\Events\UserSendMessage;
+use App\Events\NewsPush;
 use App\Http\Controllers\Core\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -82,7 +82,8 @@ class TestController extends Controller
     {
         $user = User::find(1);
         $message = 'hello,world!';
-        event(new UserSendMessage($user, $message));
+        event(new NewsPush($user, $message));
+        var_dump(123);
     }
 
     public function storage()

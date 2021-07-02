@@ -3,34 +3,32 @@
 namespace App\Events;
 
 use App\Models\User;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-//use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class UserSendMessage implements ShouldBroadcast
+//use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+
+class NewsPush implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $connection = 'redis';
     public $queue = 'broadcast-message';
 
-    public $user, $message, $groupId;
+    public $user, $message;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(User $user, $message, $groupId = 0)
+    public function __construct(User $user, $message)
     {
         $this->user = $user;
         $this->message = $message;
-        $this->groupId = $groupId;
     }
 
     /**
@@ -40,17 +38,24 @@ class UserSendMessage implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        if ($this->groupId == 0) {
-            return new Channel('public');
-        }
-        return new PrivateChannel('wechat.group.' . $this->groupId);
+        return new PrivateChannel('news-push.' . $this->user->id);
     }
 
+    /**
+     * The event's broadcast name.
+     *
+     * @return string
+     */
     public function broadcastAs()
     {
         return 'user.message';
     }
 
+    /**
+     * Get the data to broadcast.
+     *
+     * @return array
+     */
     public function broadcastWith()
     {
         return [
