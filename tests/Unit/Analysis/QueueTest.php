@@ -21,8 +21,4 @@ class QueueTest extends TestCase
     // 常驻内存原因：
     //     src/Illuminate/Queue/Worker.php -> daemon()
     //     src/Illuminate/Queue/Listener.php -> listen()
-
-    public function testQueue()
-    {
-    }
 }

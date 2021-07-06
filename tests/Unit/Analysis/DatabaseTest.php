@@ -19,5 +19,4 @@ class DatabaseTest extends TestCase
     // DB 的一些方法，看下 src/Illuminate/Database/Schema/...
     // Eloquent 在 DB 上实现了一些有趣的特性，例：修改器（setAttribute）、访问器
     // 简单的理解 DB 更贴近数据库，权限更高。 Eloquent 的粒度更细，也有了更多实用的方法。
-
 }
