@@ -21,8 +21,6 @@ class ExportJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $tries = 1;
-
     protected $downloadLog;
 
     /**
